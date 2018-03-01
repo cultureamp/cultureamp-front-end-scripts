@@ -3,7 +3,13 @@ set -e
 set -o pipefail
 set -u
 
-echo "👋 G'day Trav"
+function log {
+    printf "\x1b[48;2;240;76;93m\x1b[38;2;255;255;255m CA \x1b[0m\x1b[38;2;240;76;93m "
+    echo $1
+    printf "\x1b[0m"
+}
+
+log "G'day Trav"
 
 # Clone the example repo, install dependencies and link scripts
 yarn link
@@ -20,5 +26,5 @@ yarn lint
 yarn test
 yarn format
 
-echo "Cheers Trav 👋"
+log "Cheers Trav"
 
