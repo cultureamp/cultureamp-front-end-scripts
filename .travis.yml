@@ -6,4 +6,4 @@ cache:
 before_script:
 - yarn
 - yarn list
-script: ci-test.sh
+script: bash ./ci-test.sh
