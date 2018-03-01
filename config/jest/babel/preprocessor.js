@@ -28,10 +28,15 @@ module.exports = {
     if (shouldBabelPreprocess(filename)) {
       var babelOpts = {
         ...babelConfig,
-        presets: [].concat(
-          babelConfig.presets,
-          jestPreset // hoist jest api calls above imports
-        ),
+        presets: [
+          ...babelConfig.presets,
+          jestPreset,
+          ["env", {
+            "targets": {
+              "node": "current"
+            }
+          }]
+        ],
         filename: filename,
         sourceMap: true,
         auxiliaryCommentBefore: ' istanbul ignore next ',
