@@ -1,18 +1,49 @@
+const path = require('path');
+
 module.exports = class WebpackConfigMaker {
   constructor() {
+    this.entryPoints = ['src/main.js'];
     this.loaders = {};
+    this.sourceDirectories = ['src'];
+    this.setOutputPath('public/assets');
+    this.setOutputPathRelativeToHost('/assets/');
+    this.setFilenameTemplate('[name].bundle.js');
+    this.setDevSourceMapType('cheap-source-map');
+    this.setProdSourceMapType('source-map');
   }
 
-  setSrcDirectories(dirs) {}
+  setSourceDirectories(dirs) {
+    this.sourceDirectories = dirs;
+  }
 
-  setEntryPoints(entryPoints) {}
+  setEntryPoints(entryPoints) {
+    this.entryPoints = entryPoints;
+  }
 
-  setOutputPath(path) {}
+  setEntryPoint(entryPoint) {
+    this.entryPoints = [entryPoint];
+  }
 
-  setOutputPathRelativeToHost(path) {}
+  setOutputPath(outputPath) {
+    this.outputPath = path.resolve(process.env.PWD, outputPath);
+  }
+
+  setOutputPathRelativeToHost(outputPublicPath) {
+    if (!outputPublicPath.startsWith('/')) {
+      outputPublicPath = '/' + outputPublicPath;
+    }
+
+    if (!outputPublicPath.endsWith('/')) {
+      outputPublicPath = outputPublicPath + '/';
+    }
+
+    this.publicPath = outputPublicPath;
+  }
 
   /* e.g. [name].bundle.js */
-  setFilenameTemplate(template) {}
+  setFilenameTemplate(template) {
+    this.filename = template;
+  }
 
   registerLoader(name, opts) {}
 
@@ -28,7 +59,29 @@ module.exports = class WebpackConfigMaker {
 
   usePresets(presets) {}
 
-  setSourceMapType(type) {}
+  setDevSourceMapType(type) {
+    this.devSourceMapType = type;
+  }
 
-  generateWebpackConfig() {}
+  setProdSourceMapType(type) {
+    this.prodSourceMapType = type;
+  }
+
+  generateWebpackConfig() {
+    return {
+      entry: this.entryPoints,
+      resolve: {
+        modules: ['node_modules', ...this.sourceDirectories],
+      },
+      output: {
+        path: this.outputPath,
+        publicPath: this.publicPath,
+        filename: this.filename,
+      },
+      devtool:
+        process.env.NODE_ENV === 'production'
+          ? this.prodSourceMapType
+          : this.devSourceMapType,
+    };
+  }
 };
