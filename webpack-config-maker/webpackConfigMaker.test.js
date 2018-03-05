@@ -156,7 +156,15 @@ describe('our webpack config thing', () => {
   });
 
   describe('configuring loaders', () => {
-    test('only lets you register a loader once', () => {});
+    // TODO: do we want to just override the old loader here?
+    test('only lets you register a loader once', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.registerLoader('free-loader', {});
+      expect(() => {
+        wcm.registerLoader('free-loader', { something: 'else' });
+      }).toThrowError('A loader with that name has already been registered.');
+    });
+
     test('remembers the config for each loader', () => {});
     test('exposes the loaders via their keys on the loaders object', () => {});
     test('allows you to update a loader’s config by merging new properties', () => {});
