@@ -1,7 +1,7 @@
 const WebpackConfigMaker = require('./WebpackConfigMaker');
 
 describe('our webpack config thing', () => {
-  describe('setting an entry point', () => {
+  describe('allows you to set an entry point', () => {
     test('has a default of src/main.js', () => {
       const wcm = new WebpackConfigMaker();
 
@@ -9,7 +9,7 @@ describe('our webpack config thing', () => {
       expect(config.entry).toEqual(['src/main.js']);
     });
 
-    test('allows setting a single entry point', () => {
+    test('allows you to set a single entry point', () => {
       const wcm = new WebpackConfigMaker();
       wcm.setEntryPoint('src/app/app.js');
 
@@ -17,7 +17,7 @@ describe('our webpack config thing', () => {
       expect(config.entry).toEqual(['src/app/app.js']);
     });
 
-    test('allows setting multiple entry points', () => {
+    test('allows you to set multiple entry points', () => {
       const wcm = new WebpackConfigMaker();
       wcm.setEntryPoints(['src/app/app.js', 'src/main.js']);
 
@@ -26,7 +26,7 @@ describe('our webpack config thing', () => {
     });
   });
 
-  describe('setting source directories', () => {
+  describe('allows you to set source directories', () => {
     test('has a default of src', () => {
       const wcm = new WebpackConfigMaker();
 
@@ -45,9 +45,20 @@ describe('our webpack config thing', () => {
         'lib/client/modules',
       ]);
     });
+
+    test('allows you to set a single src dir', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.setSourceDirectory('app/client/modules');
+
+      const config = wcm.generateWebpackConfig();
+      expect(config.resolve.modules).toEqual([
+        'node_modules',
+        'app/client/modules',
+      ]);
+    });
   });
 
-  describe('setting the output path', () => {
+  describe('allows you to set the output path', () => {
     let pwd;
 
     beforeEach(() => {
@@ -75,7 +86,7 @@ describe('our webpack config thing', () => {
     });
   });
 
-  describe('setting the output public path', () => {
+  describe('allows you to set the output public path', () => {
     test('has a default of /assets', () => {
       const wcm = new WebpackConfigMaker();
 
@@ -100,7 +111,7 @@ describe('our webpack config thing', () => {
     });
   });
 
-  describe('setting the output filename template', () => {
+  describe('allows you to set the output filename template', () => {
     test('has a default of [name].bundle.js', () => {
       const wcm = new WebpackConfigMaker();
 
@@ -110,7 +121,7 @@ describe('our webpack config thing', () => {
     test('allows changing it', () => {});
   });
 
-  describe('setting the source map type', () => {
+  describe('allows you to set the source map type', () => {
     let nodeEnv;
 
     beforeEach(() => {
@@ -227,6 +238,7 @@ describe('our webpack config thing', () => {
       wcm.registerLoader('top-loader-without-modules', {
         options: { modules: false },
       });
+
       expect(wcm.loaders['top-loader-with-modules'].options.modules).toEqual(
         true
       );
@@ -236,16 +248,112 @@ describe('our webpack config thing', () => {
     });
   });
 
+  /*
+   * rule: {
+   *   extensions: [],
+   *   include: [],  // current source directories as default
+   *   exclude: [],
+   *   loaders: [],
+   * }
+   *
+   */
   describe('configuring rules', () => {
-    test('requires you to specify at least one extension', () => {});
-    describe('uses the current source directories as the default include path', () => {
-      test('works with the default source directory', () => {});
-      test('works with different source directories', () => {});
+    test('requires you to specify at least one extension', () => {
+      const wcm = new WebpackConfigMaker();
+
+      expect(() => {
+        wcm.addRule({
+          include: 'components/ui',
+          loaders: ['top-loader'],
+        });
+      }).toThrowError(
+        'You must specify at least one file extension to create a rule.'
+      );
+      expect(() => {
+        wcm.addRule({
+          extensions: [],
+          loaders: ['top-loader'],
+        });
+      }).toThrowError(
+        'You must specify at least one file extension to create a rule.'
+      );
     });
-    test('specifying an exclude adds it to the rule', () => {});
+
+    describe('uses the current source directories as the default include path', () => {
+      test('works with the default source directory', () => {
+        const wcm = new WebpackConfigMaker();
+        wcm.addRule({
+          extension: 'scss',
+          loaders: ['top-loader'],
+        });
+
+        // TODO: this feels a bit yuck checking the first element
+        // directly. Is there a preferred way?
+        expect(wcm.rules[0].include).toEqual(['src']);
+      });
+
+      test('works with different source directories', () => {
+        const wcm = new WebpackConfigMaker();
+        wcm.setSourceDirectories(['src/components', 'src/stuff']);
+        wcm.addRule({
+          extension: 'scss',
+          loaders: ['top-loader'],
+        });
+
+        expect(wcm.rules[0].include).toEqual(['src/components', 'src/stuff']);
+      });
+    });
+
+    describe('specifying an exclude adds it to the rule', () => {
+      test('works with a string', () => {
+        const wcm = new WebpackConfigMaker();
+        wcm.addRule({
+          extension: 'scss',
+          exclude: 'src/assets',
+          loaders: ['top-loader'],
+        });
+
+        expect(wcm.rules[0].exclude).toEqual(['src/assets']);
+      });
+      test('works with an array', () => {
+        const wcm = new WebpackConfigMaker();
+        wcm.addRule({
+          extension: 'scss',
+          exclude: ['src/assets', 'src/utils'],
+          loaders: ['top-loader'],
+        });
+
+        expect(wcm.rules[0].exclude).toEqual(['src/assets', 'src/utils']);
+      });
+    });
+
     describe('when you specify the loaders for this rule', () => {
-      test('if no loaders are specified it throws an error', () => {});
-      test('if any loaders haven’t been registered it throws an error', () => {});
+      test('if no loaders are specified it throws an error', () => {
+        const wcm = new WebpackConfigMaker();
+
+        expect(() => {
+          wcm.addRule({
+            extension: 'scss',
+          });
+        }).toThrowError(
+          'You must specify at least one loader to create a rule.'
+        );
+      });
+
+      // TODO
+      test('if any loaders haven’t been registered it throws an error', () => {
+        const wcm = new WebpackConfigMaker();
+
+        expect(() => {
+          wcm.addRule({
+            extension: 'scss',
+            loaders: ['carb-loader'],
+          });
+        }).toThrowError(
+          'The following loaders have not been registered: carb-loader'
+        );
+      });
+
       test('all loaders and their options are added to the rule', () => {});
     });
   });

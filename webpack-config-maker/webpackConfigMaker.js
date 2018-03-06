@@ -2,9 +2,10 @@ const path = require('path');
 
 module.exports = class WebpackConfigMaker {
   constructor() {
-    this.entryPoints = ['src/main.js'];
     this.loaders = {};
-    this.sourceDirectories = ['src'];
+    this.rules = [];
+    this.setEntryPoint('src/main.js');
+    this.setSourceDirectories(['src']);
     this.setOutputPath('public/assets');
     this.setOutputPathRelativeToHost('/assets/');
     this.setFilenameTemplate('[name].bundle.js');
@@ -14,6 +15,10 @@ module.exports = class WebpackConfigMaker {
 
   setSourceDirectories(dirs) {
     this.sourceDirectories = dirs;
+  }
+
+  setSourceDirectory(dir) {
+    this.sourceDirectories = [dir];
   }
 
   setEntryPoints(entryPoints) {
@@ -64,7 +69,34 @@ module.exports = class WebpackConfigMaker {
   removePlugin(name) {}
 
   addRule(opts, wrappingFunction) {
-    wrappingFunction && wrappingFunction();
+    if (!opts.extension && (!opts.extensions || opts.extensions.length === 0)) {
+      throw new Error(
+        'You must specify at least one file extension to create a rule.'
+      );
+    }
+
+    if (!opts.loader && (!opts.loaders || opts.loaders.length === 0)) {
+      throw new Error('You must specify at least one loader to create a rule.');
+    }
+
+    const rule = {};
+
+    if (!opts.include || opts.include.length === 0) {
+      rule.include = this.sourceDirectories;
+    }
+
+    if (opts.exclude) {
+      if (Array.isArray(opts.exclude)) {
+        rule.exclude = opts.exclude;
+      }
+      if (typeof opts.exclude === 'string') {
+        rule.exclude = [opts.exclude];
+      }
+    }
+
+    // TODO: wrappingFunction && wrappingFunction();
+
+    this.rules.push(rule);
   }
 
   usePresets(presets) {}
