@@ -165,30 +165,53 @@ describe('our webpack config thing', () => {
       }).toThrowError('A loader with that name has already been registered.');
     });
 
-    test('remembers the config for each loader', () => {});
+    test('remembers the config for each loader', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.registerLoader('carb-loader', {
+        options: {
+          modules: false,
+        },
+      });
+      wcm.registerLoader('spring-loader', {
+        foo: {
+          bar: 'baz',
+        },
+      });
+
+      expect(wcm.loaders['carb-loader']).toEqual({
+        options: {
+          modules: false,
+        },
+      });
+      expect(wcm.loaders['spring-loader']).toEqual({
+        foo: {
+          bar: 'baz',
+        },
+      });
+    });
 
     test('exposes the loaders via their keys on the loaders object', () => {
       const wcm = new WebpackConfigMaker();
       wcm.registerLoader('free-loader', {});
-      wcm.registerLoader('toast-loader', {});
-      wcm.registerLoader('cat-loader', {});
+      wcm.registerLoader('front-loader', {});
+      wcm.registerLoader('down-loader', {});
       expect(Object.keys(wcm.loaders)).toEqual([
         'free-loader',
-        'toast-loader',
-        'cat-loader',
+        'front-loader',
+        'down-loader',
       ]);
     });
 
     test('allows you to update a loader’s config by merging new properties', () => {
       const wcm = new WebpackConfigMaker();
-      wcm.registerLoader('party-loader', { options: { modules: true } });
-      wcm.modifyLoader('party-loader', {
+      wcm.registerLoader('up-loader', { options: { modules: true } });
+      wcm.modifyLoader('up-loader', {
         options: {
-          ...wcm.loaders['party-loader'].options,
+          ...wcm.loaders['up-loader'].options,
           something: false,
         },
       });
-      expect(wcm.loaders['party-loader']).toEqual({
+      expect(wcm.loaders['up-loader']).toEqual({
         options: {
           modules: true,
           something: false,
@@ -196,7 +219,21 @@ describe('our webpack config thing', () => {
       });
     });
 
-    test('allows you to use two versions of a loader with different config', () => {});
+    test('allows you to use two versions of a loader with different config', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.registerLoader('top-loader-with-modules', {
+        options: { modules: true },
+      });
+      wcm.registerLoader('top-loader-without-modules', {
+        options: { modules: false },
+      });
+      expect(wcm.loaders['top-loader-with-modules'].options.modules).toEqual(
+        true
+      );
+      expect(wcm.loaders['top-loader-without-modules'].options.modules).toEqual(
+        false
+      );
+    });
   });
 
   describe('configuring rules', () => {
