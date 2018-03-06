@@ -52,7 +52,12 @@ module.exports = class WebpackConfigMaker {
     this.loaders[name] = opts;
   }
 
-  modifyLoader(name, opts) {}
+  modifyLoader(name, opts) {
+    this.loaders[name] = {
+      ...this.loaders[name],
+      ...opts,
+    };
+  }
 
   addPlugin(name, pluginInstance) {}
 

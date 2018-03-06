@@ -166,8 +166,36 @@ describe('our webpack config thing', () => {
     });
 
     test('remembers the config for each loader', () => {});
-    test('exposes the loaders via their keys on the loaders object', () => {});
-    test('allows you to update a loader’s config by merging new properties', () => {});
+
+    test('exposes the loaders via their keys on the loaders object', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.registerLoader('free-loader', {});
+      wcm.registerLoader('toast-loader', {});
+      wcm.registerLoader('cat-loader', {});
+      expect(Object.keys(wcm.loaders)).toEqual([
+        'free-loader',
+        'toast-loader',
+        'cat-loader',
+      ]);
+    });
+
+    test('allows you to update a loader’s config by merging new properties', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.registerLoader('party-loader', { options: { modules: true } });
+      wcm.modifyLoader('party-loader', {
+        options: {
+          ...wcm.loaders['party-loader'].options,
+          something: false,
+        },
+      });
+      expect(wcm.loaders['party-loader']).toEqual({
+        options: {
+          modules: true,
+          something: false,
+        },
+      });
+    });
+
     test('allows you to use two versions of a loader with different config', () => {});
   });
 
