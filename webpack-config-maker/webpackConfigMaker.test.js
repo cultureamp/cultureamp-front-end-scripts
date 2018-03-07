@@ -167,7 +167,6 @@ describe('our webpack config thing', () => {
   });
 
   describe('configuring loaders', () => {
-    // TODO: do we want to just override the old loader here?
     test('only lets you register a loader once', () => {
       const wcm = new WebpackConfigMaker();
       wcm.registerLoader('free-loader', {});
@@ -183,20 +182,9 @@ describe('our webpack config thing', () => {
           modules: false,
         },
       });
-      wcm.registerLoader('spring-loader', {
-        foo: {
-          bar: 'baz',
-        },
-      });
-
       expect(wcm.loaders['carb-loader']).toEqual({
         options: {
           modules: false,
-        },
-      });
-      expect(wcm.loaders['spring-loader']).toEqual({
-        foo: {
-          bar: 'baz',
         },
       });
     });
@@ -206,11 +194,9 @@ describe('our webpack config thing', () => {
       wcm.registerLoader('free-loader', {});
       wcm.registerLoader('front-loader', {});
       wcm.registerLoader('down-loader', {});
-      expect(Object.keys(wcm.loaders)).toEqual([
-        'free-loader',
-        'front-loader',
-        'down-loader',
-      ]);
+      expect(Object.keys(wcm.loaders)).toEqual(
+        expect.arrayContaining(['free-loader', 'front-loader', 'down-loader'])
+      );
     });
 
     test('allows you to update a loader’s config by merging new properties', () => {
@@ -218,7 +204,6 @@ describe('our webpack config thing', () => {
       wcm.registerLoader('up-loader', { options: { modules: true } });
       wcm.modifyLoader('up-loader', {
         options: {
-          ...wcm.loaders['up-loader'].options,
           something: false,
         },
       });
@@ -230,21 +215,43 @@ describe('our webpack config thing', () => {
       });
     });
 
+    test('will overwrite values when updating loader config (rather than merging them)', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.registerLoader('up-loader', {
+        options: { modules: true, presets: ['preset-es6'] },
+      });
+      wcm.modifyLoader('up-loader', {
+        options: {
+          presets: ['preset-react'],
+        },
+      });
+      expect(wcm.loaders['up-loader']).toEqual({
+        options: {
+          modules: true,
+          presets: ['preset-react'],
+        },
+      });
+    });
+
     test('allows you to use two versions of a loader with different config', () => {
       const wcm = new WebpackConfigMaker();
       wcm.registerLoader('top-loader-with-modules', {
+        loader: 'top-loader',
         options: { modules: true },
       });
       wcm.registerLoader('top-loader-without-modules', {
+        loader: 'top-loader',
         options: { modules: false },
       });
 
-      expect(wcm.loaders['top-loader-with-modules'].options.modules).toEqual(
-        true
-      );
-      expect(wcm.loaders['top-loader-without-modules'].options.modules).toEqual(
-        false
-      );
+      expect(wcm.loaders['top-loader-with-modules']).toEqual({
+        loader: 'top-loader',
+        options: { modules: true },
+      });
+      expect(wcm.loaders['top-loader-without-modules']).toEqual({
+        loader: 'top-loader',
+        options: { modules: false },
+      });
     });
   });
 
@@ -282,48 +289,77 @@ describe('our webpack config thing', () => {
     describe('uses the current source directories as the default include path', () => {
       test('works with the default source directory', () => {
         const wcm = new WebpackConfigMaker();
+        wcm.registerLoader('top-loader');
         wcm.addRule({
           extension: 'scss',
           loaders: ['top-loader'],
         });
+        const config = wcm.generateWebpackConfig();
 
-        // TODO: this feels a bit yuck checking the first element
-        // directly. Is there a preferred way?
-        expect(wcm.rules[0].include).toEqual(['src']);
+        expect(config.module.rules).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              include: ['src'],
+            }),
+          ])
+        );
       });
 
       test('works with different source directories', () => {
         const wcm = new WebpackConfigMaker();
         wcm.setSourceDirectories(['src/components', 'src/stuff']);
+        wcm.registerLoader('top-loader');
         wcm.addRule({
           extension: 'scss',
           loaders: ['top-loader'],
         });
 
-        expect(wcm.rules[0].include).toEqual(['src/components', 'src/stuff']);
+        const config = wcm.generateWebpackConfig();
+        expect(config.module.rules).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              include: ['src/components', 'src/stuff'],
+            }),
+          ])
+        );
       });
     });
 
     describe('specifying an exclude adds it to the rule', () => {
       test('works with a string', () => {
         const wcm = new WebpackConfigMaker();
+        wcm.registerLoader('top-loader');
         wcm.addRule({
           extension: 'scss',
           exclude: 'src/assets',
           loaders: ['top-loader'],
         });
 
-        expect(wcm.rules[0].exclude).toEqual(['src/assets']);
+        expect(wcm.rules).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              exclude: ['src/assets'],
+            }),
+          ])
+        );
       });
+
       test('works with an array', () => {
         const wcm = new WebpackConfigMaker();
+        wcm.registerLoader('top-loader');
         wcm.addRule({
           extension: 'scss',
           exclude: ['src/assets', 'src/utils'],
           loaders: ['top-loader'],
         });
 
-        expect(wcm.rules[0].exclude).toEqual(['src/assets', 'src/utils']);
+        expect(wcm.rules).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              exclude: ['src/assets', 'src/utils'],
+            }),
+          ])
+        );
       });
     });
 
@@ -340,21 +376,85 @@ describe('our webpack config thing', () => {
         );
       });
 
-      // TODO
-      test('if any loaders haven’t been registered it throws an error', () => {
-        const wcm = new WebpackConfigMaker();
+      describe('if any loaders haven’t been registered it throws an error', () => {
+        test('with a single loader', () => {
+          const wcm = new WebpackConfigMaker();
 
-        expect(() => {
-          wcm.addRule({
-            extension: 'scss',
-            loaders: ['carb-loader'],
-          });
-        }).toThrowError(
-          'The following loaders have not been registered: carb-loader'
-        );
+          expect(() => {
+            wcm.addRule({
+              extension: 'scss',
+              loader: 'carb-loader',
+            });
+          }).toThrowError(
+            'The following loaders have not been registered: carb-loader'
+          );
+        });
+
+        test('with multiple loaders', () => {
+          const wcm = new WebpackConfigMaker();
+          wcm.registerLoader('front-loader');
+
+          expect(() => {
+            wcm.addRule({
+              extension: 'scss',
+              loaders: ['carb-loader', 'front-loader', 'free-loader'],
+            });
+          }).toThrowError(
+            'The following loaders have not been registered: carb-loader, free-loader'
+          );
+        });
       });
 
-      test('all loaders and their options are added to the rule', () => {});
+      test('all loaders and their options are added to the rule', () => {
+        const wcm = new WebpackConfigMaker();
+        wcm.registerLoader('css-loader');
+        wcm.registerLoader('sass-loader');
+        wcm.registerLoader('babel-loader', {
+          options: {
+            presets: ['preset-es6', 'preset-react'],
+          },
+        });
+        wcm.addRule({
+          extension: 'scss',
+          loaders: ['css-loader', 'sass-loader'],
+          include: 'src/styles',
+        });
+        // wcm.addRule({
+        //   extensions: ['js', 'jsx'],
+        //   loader: 'babel-loader',
+        //   exclude: 'src/vendor',
+        // });
+        const config = wcm.generateWebpackConfig();
+
+        expect(config.module.rules).toEqual(
+          expect.arrayContaining([
+            {
+              test: /\.scss$/,
+              include: ['src/styles'],
+              use: [
+                {
+                  loader: 'css-loader',
+                },
+                {
+                  loader: 'sass-loader',
+                },
+              ],
+            },
+            // {
+            //   test: /\.(js|jsx)$/,
+            //   exclude: ['src/vendor'],
+            //   use: [
+            //     {
+            //       loader: 'babel-loader',
+            //       options: {
+            //         presets: ['preset-es6', 'preset-react'],
+            //       },
+            //     },
+            //   ],
+            // },
+          ])
+        );
+      });
     });
   });
 

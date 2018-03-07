@@ -1,4 +1,5 @@
 const path = require('path');
+const merge = require('lodash.merge');
 
 module.exports = class WebpackConfigMaker {
   constructor() {
@@ -58,10 +59,7 @@ module.exports = class WebpackConfigMaker {
   }
 
   modifyLoader(name, opts) {
-    this.loaders[name] = {
-      ...this.loaders[name],
-      ...opts,
-    };
+    merge(this.loaders[name], opts);
   }
 
   addPlugin(name, pluginInstance) {}
@@ -75,14 +73,39 @@ module.exports = class WebpackConfigMaker {
       );
     }
 
-    if (!opts.loader && (!opts.loaders || opts.loaders.length === 0)) {
+    if (opts.loader && !opts.loaders) {
+      opts.loaders = [opts.loader];
+    }
+
+    if (!opts.loaders || opts.loaders.length === 0) {
       throw new Error('You must specify at least one loader to create a rule.');
+    }
+
+    if (opts.loaders) {
+      let missingLoaders = [];
+      for (let loader of opts.loaders) {
+        if (!this.loaders.hasOwnProperty(loader)) {
+          missingLoaders.push(loader);
+        }
+      }
+      if (missingLoaders.length > 0) {
+        throw new Error(
+          `The following loaders have not been registered: ${missingLoaders.join(
+            ', '
+          )}`
+        );
+      }
     }
 
     const rule = {};
 
-    if (!opts.include || opts.include.length === 0) {
-      rule.include = this.sourceDirectories;
+    if (opts.include) {
+      if (Array.isArray(opts.include)) {
+        rule.include = opts.include;
+      }
+      if (typeof opts.include === 'string') {
+        rule.include = [opts.include];
+      }
     }
 
     if (opts.exclude) {
@@ -97,6 +120,28 @@ module.exports = class WebpackConfigMaker {
     // TODO: wrappingFunction && wrappingFunction();
 
     this.rules.push(rule);
+  }
+
+  _generateRule(rule) {
+    const output = {};
+
+    if (rule.include) {
+      output.include =
+        typeof rule.include === 'string' ? [rule.include] : rule.include;
+    } else {
+      output.include = this.sourceDirectories;
+    }
+
+    if (rule.exclude) {
+      output.exclude =
+        typeof rule.exclude === 'string' ? [rule.exclude] : rule.exclude;
+    }
+
+    output.test = /lol/;
+
+    output.use = [];
+
+    return output;
   }
 
   usePresets(presets) {}
@@ -119,6 +164,9 @@ module.exports = class WebpackConfigMaker {
         path: this.outputPath,
         publicPath: this.publicPath,
         filename: this.filename,
+      },
+      module: {
+        rules: this.rules.map(rule => this._generateRule(rule)),
       },
       devtool:
         process.env.NODE_ENV === 'production'
