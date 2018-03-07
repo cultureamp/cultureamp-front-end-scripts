@@ -67,11 +67,17 @@ module.exports = class WebpackConfigMaker {
   removePlugin(name) {}
 
   addRule(opts, wrappingFunction) {
-    if (!opts.extension && (!opts.extensions || opts.extensions.length === 0)) {
+    const rule = {};
+
+    if (opts.extension && !opts.extensions) {
+      opts.extensions = [opts.extension];
+    }
+    if (!opts.extensions || opts.extensions.length === 0) {
       throw new Error(
         'You must specify at least one file extension to create a rule.'
       );
     }
+    rule.extensions = opts.extensions;
 
     if (opts.loader && !opts.loaders) {
       opts.loaders = [opts.loader];
@@ -96,8 +102,6 @@ module.exports = class WebpackConfigMaker {
         );
       }
     }
-
-    const rule = {};
 
     if (opts.include) {
       if (Array.isArray(opts.include)) {
@@ -137,7 +141,7 @@ module.exports = class WebpackConfigMaker {
         typeof rule.exclude === 'string' ? [rule.exclude] : rule.exclude;
     }
 
-    output.test = /lol/;
+    output.test = new RegExp(`\\.(${rule.extensions.join('|')})$`);
 
     output.use = [];
 

@@ -426,10 +426,16 @@ describe('our webpack config thing', () => {
         // });
         const config = wcm.generateWebpackConfig();
 
+        function expectRegex(expectedRegex) {
+          return expect.objectContaining({
+            source: expectedRegex.source
+          });
+        }
+
         expect(config.module.rules).toEqual(
           expect.arrayContaining([
             {
-              test: /\.scss$/,
+              test: expectRegex(/\.(scss)$/),
               include: ['src/styles'],
               use: [
                 {
