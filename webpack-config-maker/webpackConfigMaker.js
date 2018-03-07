@@ -101,6 +101,7 @@ module.exports = class WebpackConfigMaker {
           )}`
         );
       }
+      rule.loaders = opts.loaders;
     }
 
     if (opts.include) {
@@ -143,7 +144,14 @@ module.exports = class WebpackConfigMaker {
 
     output.test = new RegExp(`\\.(${rule.extensions.join('|')})$`);
 
-    output.use = [];
+    output.use = rule.loaders.map(loader => {
+      let loaderOutput = {};
+      loaderOutput['loader'] = loader;
+      if (this.loaders[loader]) {
+        loaderOutput['options'] = this.loaders[loader].options;
+      }
+      return loaderOutput;
+    });
 
     return output;
   }

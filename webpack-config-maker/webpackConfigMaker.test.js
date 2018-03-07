@@ -463,41 +463,35 @@ describe('our webpack config thing', () => {
             ])
           );
         });
-      });
 
-      /*
-      test('all loaders and their options are added to the rule', () => {
-
-        expect(config.module.rules).toEqual(
-          expect.arrayContaining([
-            {
-              test: expectRegex(/\.(scss)$/),
-              include: ['src/styles'],
-              use: [
-                // {
-                //   loader: 'css-loader',
-                // },
-                // {
-                //   loader: 'sass-loader',
-                // },
-              ],
-            },
-            // {
-            //   test: /\.(js|jsx)$/,
-            //   exclude: ['src/vendor'],
-            //   use: [
-            //     {
-            //       loader: 'babel-loader',
-            //       options: {
-            //         presets: ['preset-es6', 'preset-react'],
-            //       },
-            //     },
-            //   ],
-            // },
-          ])
-        );
+        test('the loader config is output correctly', () => {
+          const config = wcm.generateWebpackConfig();
+          expect(config.module.rules).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({
+                use: [
+                  {
+                    loader: 'css-loader',
+                  },
+                  {
+                    loader: 'sass-loader',
+                  },
+                ],
+              }),
+              expect.objectContaining({
+                use: [
+                  {
+                    loader: 'babel-loader',
+                    options: {
+                      presets: ['preset-es6', 'preset-react'],
+                    },
+                  },
+                ],
+              }),
+            ])
+          );
+        });
       });
-      */
     });
   });
 
