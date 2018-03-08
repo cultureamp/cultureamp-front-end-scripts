@@ -431,6 +431,34 @@ describe('our webpack config thing', () => {
         });
       });
 
+      test('the loaders and rules generate valid config', () => {
+        const wcm = new WebpackConfigMaker();
+        wcm.registerLoader('my-babel-loader', {
+          loader: 'babel-loader',
+          options: {
+            presets: ['babel-preset-es6', 'babel-preset-react'],
+          },
+        });
+        wcm.addRule({
+          extension: 'js',
+          loaders: ['my-babel-loader'],
+        });
+        const config = wcm.generateWebpackConfig();
+        const rule = config.module.rules[0];
+        expect(rule).toEqual(
+          expect.objectContaining({
+            use: [
+              {
+                loader: 'babel-loader',
+                options: {
+                  presets: ['babel-preset-es6', 'babel-preset-react'],
+                },
+              },
+            ],
+          })
+        );
+      });
+
       describe('when multiple loaders and rules are set', () => {
         const wcm = new WebpackConfigMaker();
         wcm.registerLoader('css-loader');
@@ -537,24 +565,50 @@ describe('our webpack config thing', () => {
   });
 
   describe('making a rule use the extractTextPlugin', () => {
-    /*
-    Use case:
-    ExtractText plugin needs to work like this:
-    - You create a `new ExtractTextPlugin()`
-    - Add it to `plugins` array
-    - For the scss rule, if the loaders looked like:
-       - use: ['style-loader', 'css-loader', 'postcss-loader', 'sass-loader']
-    - We replace it with:
-       - use: [{
-         loader: extractTextPlugin.extract({
-           fallback: {loader: 'style-loader', options: ...},
-           use: ['style-loader', 'css-loader', 'postcss-loader', 'sass-loader']
-         }),
-       }]
+    let wcm, originalNodeEnv;
 
-    HappyPack is similar...
-    */
-    test('');
+    beforeEach(() => {
+      originalNodeEnv = process.env.NODE_ENV;
+      wcm = new WebpackConfigMaker();
+      wcm.registerLoader('style-loader', { loader: 'style-loader' });
+      wcm.registerLoader('css-loader', { loader: 'css-loader' });
+      wcm.registerLoader('postcss-loader', { loader: 'postcss-loader' });
+      wcm.registerLoader('sass-loader', { loader: 'sass-loader' });
+      wcm.addRule({
+        extension: 'scss',
+        loaders: ['css-loader', 'postcss-loader', 'sass-loader'],
+        include: 'src/styles',
+        extractText: true,
+      });
+    });
+
+    test('It should add style-loader and extract-text-plugin-loader', () => {
+      const rule = wcm.generateWebpackConfig().module.rules[0];
+      expect(rule.use.length).toEqual(5);
+      expect(rule.use[0].loader.includes('extract-text-webpack-plugin')).toBe(
+        true
+      );
+      expect(rule.use[1].loader).toEqual('style-loader');
+      expect(rule.use[2].loader).toEqual('css-loader');
+      expect(rule.use[3].loader).toEqual('postcss-loader');
+      expect(rule.use[4].loader).toEqual('sass-loader');
+    });
+
+    test('In development it should be disabled', () => {
+      process.env.NODE_ENV = 'development';
+      const rule = wcm.generateWebpackConfig().module.rules[0];
+      expect(wcm.plugins['ExtractTextPlugin'].options.disable).toBe(true);
+    });
+
+    test('In production it should be enabled', () => {
+      process.env.NODE_ENV = 'production';
+      const rule = wcm.generateWebpackConfig().module.rules[0];
+      expect(wcm.plugins['ExtractTextPlugin'].options.disable).toBe(false);
+    });
+
+    afterAll(() => {
+      process.env.NODE_ENV = originalNodeEnv;
+    });
   });
 
   describe('configuring decorators', () => {

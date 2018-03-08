@@ -1,5 +1,6 @@
 const path = require('path');
 const merge = require('lodash.merge');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = class WebpackConfigMaker {
   constructor() {
@@ -78,7 +79,7 @@ module.exports = class WebpackConfigMaker {
     delete this.plugins[name];
   }
 
-  addRule(opts, wrappingFunction) {
+  addRule(opts) {
     const rule = {};
 
     if (opts.extension && !opts.extensions) {
@@ -134,7 +135,7 @@ module.exports = class WebpackConfigMaker {
       }
     }
 
-    // TODO: wrappingFunction && wrappingFunction();
+    rule.extractText = opts.extractText;
 
     this.rules.push(rule);
   }
@@ -156,14 +157,23 @@ module.exports = class WebpackConfigMaker {
 
     output.test = new RegExp(`\\.(${rule.extensions.join('|')})$`);
 
-    output.use = rule.loaders.map(loader => {
-      let loaderOutput = {};
-      loaderOutput['loader'] = loader;
-      if (this.loaders[loader]) {
-        loaderOutput['options'] = this.loaders[loader].options;
+    output.use = rule.loaders.map(loader => this.loaders[loader]);
+
+    if (rule.extractText) {
+      let plugin = this.plugins['ExtractTextPlugin'];
+      if (!plugin) {
+        plugin = new ExtractTextPlugin({
+          filename: '[name]-[contenthash].bundle.css',
+          disable: process.env.NODE_ENV !== 'production',
+        });
+        this.addPlugin('ExtractTextPlugin', plugin);
       }
-      return loaderOutput;
-    });
+
+      output.use = plugin.extract({
+        fallback: 'style-loader',
+        use: output.use,
+      });
+    }
 
     return output;
   }
