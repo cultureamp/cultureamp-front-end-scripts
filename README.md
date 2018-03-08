@@ -98,7 +98,25 @@ You can provide your own Webpack configuration by supplying a file `webpack.conf
 
 Rather than creating an entire webpack configuration from scratch, we have created "WebpackConfigMaker" as an API that makes it easier to handle webpack configuration in a composable way using various presets.
 
-TODO: document WebpackConfigMaker.
+```javascript
+// NOTE: this is still a work-in-progress
+const WebpackConfigMaker = require('cultureamp-front-end-scripts/webpack-config-maker');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+var configMaker = new WebpackConfigMaker();
+configMaker.usePreset('cultureamp-front-end-scripts/presets/standard');
+configMaker.setEntryPoints([
+  'app/client/entrypoints/admin.js',
+  'app/client/entrypoints/demo.js',
+  'app/client/entrypoints/exit.js',
+]);
+configMaker.setSourceDirectories(['app/client/', 'lib/client/']);
+configMaker.addPlugin('my-html-plugin', new HtmlWebpackPlugin());
+
+module.exports = configMaker.generateWebpackConfig();
+```
+
+TODO: provide full documentation for WebpackConfigMaker.
 
 ### Jest
 
