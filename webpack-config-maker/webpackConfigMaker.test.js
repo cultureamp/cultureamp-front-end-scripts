@@ -183,6 +183,7 @@ describe('our webpack config thing', () => {
         },
       });
       expect(wcm.loaders['carb-loader']).toEqual({
+        loader: 'carb-loader',
         options: {
           modules: false,
         },
@@ -199,6 +200,29 @@ describe('our webpack config thing', () => {
       );
     });
 
+    test('registering a loader without a `loader` property uses a loader by the same name', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.registerLoader('sass-loader', {
+        options: {
+          precision: 9,
+        },
+      });
+      expect(wcm.loaders['sass-loader']).toEqual({
+        loader: 'sass-loader',
+        options: {
+          precision: 9,
+        },
+      });
+    });
+
+    test('registering a loader with no options uses a loader by the same name', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.registerLoader('css-loader');
+      expect(wcm.loaders['css-loader']).toEqual({
+        loader: 'css-loader',
+      });
+    });
+
     test('allows you to update a loader’s config by merging new properties', () => {
       const wcm = new WebpackConfigMaker();
       wcm.registerLoader('up-loader', { options: { modules: true } });
@@ -208,6 +232,7 @@ describe('our webpack config thing', () => {
         },
       });
       expect(wcm.loaders['up-loader']).toEqual({
+        loader: 'up-loader',
         options: {
           modules: true,
           something: false,
@@ -226,6 +251,7 @@ describe('our webpack config thing', () => {
         },
       });
       expect(wcm.loaders['up-loader']).toEqual({
+        loader: 'up-loader',
         options: {
           modules: true,
           presets: ['preset-react'],
@@ -409,7 +435,8 @@ describe('our webpack config thing', () => {
         const wcm = new WebpackConfigMaker();
         wcm.registerLoader('css-loader');
         wcm.registerLoader('sass-loader');
-        wcm.registerLoader('babel-loader', {
+        wcm.registerLoader('my-babel-loader', {
+          loader: 'babel-loader',
           options: {
             presets: ['preset-es6', 'preset-react'],
           },
@@ -421,7 +448,7 @@ describe('our webpack config thing', () => {
         });
         wcm.addRule({
           extensions: ['js', 'jsx'],
-          loader: 'babel-loader',
+          loader: 'my-babel-loader',
           exclude: 'src/vendor',
         });
         const config = wcm.generateWebpackConfig();
@@ -509,7 +536,7 @@ describe('our webpack config thing', () => {
     });
   });
 
-  describe('providing a wrapping function for a rule', () => {
+  describe('making a rule use the extractTextPlugin', () => {
     /*
     Use case:
     ExtractText plugin needs to work like this:

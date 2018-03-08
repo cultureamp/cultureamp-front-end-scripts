@@ -57,6 +57,12 @@ module.exports = class WebpackConfigMaker {
     if (this.loaders.hasOwnProperty(name)) {
       throw new Error('A loader with that name has already been registered.');
     }
+    if (!opts) {
+      opts = {};
+    }
+    if (!opts.loader) {
+      opts.loader = name;
+    }
     this.loaders[name] = opts;
   }
 
