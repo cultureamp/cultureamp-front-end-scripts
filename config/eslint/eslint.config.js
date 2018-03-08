@@ -42,7 +42,7 @@ module.exports = {
      * Strict mode
      */
     // babel inserts "use strict"; for us
-    strict: [2, 'never'], // http://eslint.org/docs/rules/strict
+    strict: [ERROR, 'never'], // http://eslint.org/docs/rules/strict
 
     /**
      * ES6
@@ -56,20 +56,20 @@ module.exports = {
     'no-shadow': ERROR, // http://eslint.org/docs/rules/no-shadow
     'no-shadow-restricted-names': ERROR, // http://eslint.org/docs/rules/no-shadow-restricted-names
     'no-unused-vars': [
-      2,
+      ERROR,
       {
         // http://eslint.org/docs/rules/no-unused-vars
         vars: 'local',
         args: 'after-used',
       },
     ],
-    'no-use-before-define': [2, 'nofunc'], // http://eslint.org/docs/rules/no-use-before-define
+    'no-use-before-define': [ERROR, 'nofunc'], // http://eslint.org/docs/rules/no-use-before-define
 
     /**
      * Possible errors
      */
-    'comma-dangle': [2, 'always-multiline'], // http://eslint.org/docs/rules/comma-dangle
-    'no-cond-assign': [2, 'always'], // http://eslint.org/docs/rules/no-cond-assign
+    'comma-dangle': [ERROR, 'always-multiline'], // http://eslint.org/docs/rules/comma-dangle
+    'no-cond-assign': [ERROR, 'always'], // http://eslint.org/docs/rules/no-cond-assign
     'no-console': ERROR, // http://eslint.org/docs/rules/no-console
     'no-debugger': WARN, // http://eslint.org/docs/rules/no-debugger
     // TODO: Find a better way to do alert
@@ -86,7 +86,7 @@ module.exports = {
     'no-invalid-regexp': ERROR, // http://eslint.org/docs/rules/no-invalid-regexp
     'no-irregular-whitespace': ERROR, // http://eslint.org/docs/rules/no-irregular-whitespace
     'no-obj-calls': ERROR, // http://eslint.org/docs/rules/no-obj-calls
-    'quote-props': [2, 'as-needed', { unnecessary: false }], // http://eslint.org/docs/rules/quote-props
+    'quote-props': [ERROR, 'as-needed', { unnecessary: false }], // http://eslint.org/docs/rules/quote-props
     'no-sparse-arrays': ERROR, // http://eslint.org/docs/rules/no-sparse-arrays
     'no-unexpected-multiline': OFF, // http://eslint.org/docs/rules/no-unexpected-multiline
     'no-unreachable': ERROR, // http://eslint.org/docs/rules/no-unreachable
@@ -99,13 +99,13 @@ module.exports = {
     'consistent-return': OFF, // http://eslint.org/docs/rules/consistent-return
     'default-case': ERROR, // http://eslint.org/docs/rules/default-case
     'dot-notation': [
-      2,
+      ERROR,
       {
         // http://eslint.org/docs/rules/dot-notation
         allowKeywords: true,
       },
     ],
-    eqeqeq: [2, 'smart'], // http://eslint.org/docs/rules/eqeqeq
+    eqeqeq: [ERROR, 'smart'], // http://eslint.org/docs/rules/eqeqeq
     'guard-for-in': ERROR, // http://eslint.org/docs/rules/guard-for-in
     'no-caller': ERROR, // http://eslint.org/docs/rules/no-caller
     'no-else-return': ERROR, // http://eslint.org/docs/rules/no-else-return
@@ -137,21 +137,21 @@ module.exports = {
     'no-with': ERROR, // http://eslint.org/docs/rules/no-with
     radix: ERROR, // http://eslint.org/docs/rules/radix
     'vars-on-top': ERROR, // http://eslint.org/docs/rules/vars-on-top
-    'wrap-iife': [2, 'any'], // http://eslint.org/docs/rules/wrap-iife
+    'wrap-iife': [ERROR, 'any'], // http://eslint.org/docs/rules/wrap-iife
     yoda: ERROR, // http://eslint.org/docs/rules/yoda
 
     /**
      * Style
      */
     'prettier/prettier': [
-      2,
+      ERROR,
       {
         trailingComma: 'es5',
         singleQuote: true,
       },
     ],
     camelcase: [
-      2,
+      ERROR,
       {
         // http://eslint.org/docs/rules/camelcase
         properties: 'never',
@@ -159,7 +159,7 @@ module.exports = {
     ],
     'func-names': WARN, // http://eslint.org/docs/rules/func-names
     'new-cap': [
-      2,
+      ERROR,
       {
         // http://eslint.org/docs/rules/new-cap
         newIsCap: true,
@@ -169,9 +169,9 @@ module.exports = {
     'no-nested-ternary': ERROR, // http://eslint.org/docs/rules/no-nested-ternary
     'no-new-object': ERROR, // http://eslint.org/docs/rules/no-new-object
     'no-underscore-dangle': OFF, // http://eslint.org/docs/rules/no-underscore-dangle
-    'one-var': [2, 'never'], // http://eslint.org/docs/rules/one-var
+    'one-var': [ERROR, 'never'], // http://eslint.org/docs/rules/one-var
     'spaced-comment': [
-      2,
+      ERROR,
       'always',
       {
         // http://eslint.org/docs/rules/spaced-comment
@@ -180,7 +180,7 @@ module.exports = {
     ],
     // http://eslint.org/docs/rules/no-case-declarations
     // note: you can wrap case bodies in {} blocks if you really want declarations in them
-    'no-case-declarations': [2],
+    'no-case-declarations': [ERROR],
 
     /**
      * JSX style
@@ -199,7 +199,7 @@ module.exports = {
     'react/prop-types': ERROR, // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/prop-types.md
     'react/react-in-jsx-scope': ERROR, // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/react-in-jsx-scope.md
     'react/sort-comp': [
-      2,
+      ERROR,
       {
         // https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/sort-comp.md
         order: [
