@@ -424,72 +424,42 @@ describe('our webpack config thing', () => {
           loader: 'babel-loader',
           exclude: 'src/vendor',
         });
+        const config = wcm.generateWebpackConfig();
+        const rules = config.module.rules;
+        const cssRule = rules[0];
+        const jsRule = rules[1];
 
         test('the regexes are output correctly', () => {
-          const config = wcm.generateWebpackConfig();
-          expect(config.module.rules).toEqual(
-            expect.arrayContaining([
-              expect.objectContaining({
-                test: /\.(scss)$/,
-              }),
-              expect.objectContaining({
-                test: /\.(js|jsx)$/,
-              }),
-            ])
+          expect(jsRule).toEqual(
+            expect.objectContaining({
+              test: /\.(js|jsx)$/,
+            })
+          );
+          expect(cssRule).toEqual(
+            expect.objectContaining({
+              test: /\.(scss)$/,
+            })
           );
         });
 
         test('the includes are output correctly', () => {
-          const config = wcm.generateWebpackConfig();
-          expect(config.module.rules).toEqual(
-            expect.arrayContaining([
-              expect.objectContaining({
-                include: ['src/styles'],
-              }),
-              expect.objectContaining({
-                include: ['src'],
-              }),
-            ])
-          );
+          expect(cssRule.include).toEqual(['src/styles']);
+          expect(jsRule.include).toEqual(['src']);
         });
 
         test('the excludes are output correctly', () => {
-          const config = wcm.generateWebpackConfig();
-          expect(config.module.rules).toEqual(
-            expect.arrayContaining([
-              expect.objectContaining({
-                exclude: ['src/vendor'],
-              }),
-            ])
-          );
+          expect(cssRule.exclude).toBe(undefined);
+          expect(jsRule.exclude).toEqual(['src/vendor']);
         });
 
         test('the loader config is output correctly', () => {
-          const config = wcm.generateWebpackConfig();
-          expect(config.module.rules).toEqual(
-            expect.arrayContaining([
-              expect.objectContaining({
-                use: [
-                  {
-                    loader: 'css-loader',
-                  },
-                  {
-                    loader: 'sass-loader',
-                  },
-                ],
-              }),
-              expect.objectContaining({
-                use: [
-                  {
-                    loader: 'babel-loader',
-                    options: {
-                      presets: ['preset-es6', 'preset-react'],
-                    },
-                  },
-                ],
-              }),
-            ])
-          );
+          expect(cssRule.use[0].loader).toBe('css-loader');
+          expect(cssRule.use[1].loader).toBe('sass-loader');
+          expect(jsRule.use[0].loader).toBe('babel-loader');
+          expect(jsRule.use[0].options.presets).toEqual([
+            'preset-es6',
+            'preset-react',
+          ]);
         });
       });
     });
