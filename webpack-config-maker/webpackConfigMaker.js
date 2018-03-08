@@ -4,6 +4,8 @@ const merge = require('lodash.merge');
 module.exports = class WebpackConfigMaker {
   constructor() {
     this.loaders = {};
+    this.plugins = {};
+    this.decorators = {};
     this.rules = [];
     this.setEntryPoint('src/main.js');
     this.setSourceDirectories(['src']);
@@ -62,9 +64,13 @@ module.exports = class WebpackConfigMaker {
     merge(this.loaders[name], opts);
   }
 
-  addPlugin(name, pluginInstance) {}
+  addPlugin(name, pluginInstance) {
+    this.plugins[name] = pluginInstance;
+  }
 
-  removePlugin(name) {}
+  removePlugin(name) {
+    delete this.plugins[name];
+  }
 
   addRule(opts, wrappingFunction) {
     const rule = {};
@@ -166,8 +172,16 @@ module.exports = class WebpackConfigMaker {
     this.prodSourceMapType = type;
   }
 
+  addDecorator(name, decoratorFn) {
+    this.decorators[name] = decoratorFn;
+  }
+
+  removeDecorator(name) {
+    delete this.decorators[name];
+  }
+
   generateWebpackConfig() {
-    return {
+    const config = {
       entry: this.entryPoints,
       resolve: {
         modules: ['node_modules', ...this.sourceDirectories],
@@ -180,10 +194,19 @@ module.exports = class WebpackConfigMaker {
       module: {
         rules: this.rules.map(rule => this._generateRule(rule)),
       },
+      plugins: Object.values(this.plugins),
       devtool:
         process.env.NODE_ENV === 'production'
           ? this.prodSourceMapType
           : this.devSourceMapType,
     };
+    return decorateConfig(config, Object.values(this.decorators));
   }
 };
+
+function decorateConfig(config, decorators) {
+  // Apply a series of transformations on a config, returning the new ("decorated") config.
+  return decorators.reduce((decoratedConfig, decorator) => {
+    return decorator(decoratedConfig);
+  }, config);
+}

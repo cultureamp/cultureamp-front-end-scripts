@@ -466,8 +466,104 @@ describe('our webpack config thing', () => {
   });
 
   describe('configuring plugins', () => {
-    test('adds a plugin using its name', () => {});
-    test('removes a plugin using its name', () => {});
+    test('adds a plugin using its name', () => {
+      const wcm = new WebpackConfigMaker();
+      const uglifyPlugin = {};
+      const extractTextPlugin = {};
+      wcm.addPlugin('Uglify', uglifyPlugin);
+      wcm.addPlugin('ExtractText', extractTextPlugin);
+      expect(Object.keys(wcm.plugins)).toEqual(['Uglify', 'ExtractText']);
+      expect(wcm.plugins['Uglify']).toBe(uglifyPlugin);
+      expect(wcm.plugins['ExtractText']).toBe(extractTextPlugin);
+    });
+
+    test('can replace a plugin by redefining it', () => {
+      const wcm = new WebpackConfigMaker();
+      const uglifyPlugin = {};
+      const uglifyPlugin2 = {};
+      wcm.addPlugin('Uglify', uglifyPlugin);
+      wcm.addPlugin('Uglify', uglifyPlugin2);
+      expect(Object.keys(wcm.plugins)).toEqual(['Uglify']);
+      expect(wcm.plugins['Uglify']).toBe(uglifyPlugin2);
+    });
+
+    test('removes a plugin using its name', () => {
+      const wcm = new WebpackConfigMaker();
+      const uglifyPlugin = {};
+      const extractTextPlugin = {};
+      wcm.addPlugin('Uglify', uglifyPlugin);
+      wcm.addPlugin('ExtractText', extractTextPlugin);
+      wcm.removePlugin('Uglify');
+      expect(Object.keys(wcm.plugins)).toEqual(['ExtractText']);
+      expect(wcm.plugins['ExtractText']).toBe(extractTextPlugin);
+    });
+
+    test('outputs a plugins array on the final config', () => {
+      const wcm = new WebpackConfigMaker();
+      const uglifyPlugin = {};
+      const extractTextPlugin = {};
+      wcm.addPlugin('Uglify', uglifyPlugin);
+      wcm.addPlugin('ExtractText', extractTextPlugin);
+      const config = wcm.generateWebpackConfig();
+      expect(config.plugins).toEqual([uglifyPlugin, extractTextPlugin]);
+    });
+  });
+
+  describe('providing a wrapping function for a rule', () => {
+    /*
+    Use case:
+    ExtractText plugin needs to work like this:
+    - You create a `new ExtractTextPlugin()`
+    - Add it to `plugins` array
+    - For the scss rule, if the loaders looked like:
+       - use: ['style-loader', 'css-loader', 'postcss-loader', 'sass-loader']
+    - We replace it with:
+       - use: [{
+         loader: extractTextPlugin.extract({
+           fallback: {loader: 'style-loader', options: ...},
+           use: ['style-loader', 'css-loader', 'postcss-loader', 'sass-loader']
+         }),
+       }]
+
+    HappyPack is similar...
+    */
+    test('');
+  });
+
+  describe('configuring decorators', () => {
+    test('I can add a decorator with a name', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.addDecorator('style-guide-decorator', config => {});
+      wcm.addDecorator('happy-pack-decorator', config => {});
+      expect(Object.keys(wcm.decorators)).toEqual([
+        'style-guide-decorator',
+        'happy-pack-decorator',
+      ]);
+    });
+
+    test('I can remove a decorator with a name', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.addDecorator('style-guide-decorator', config => {});
+      wcm.addDecorator('happy-pack-decorator', config => {});
+      wcm.removeDecorator('style-guide-decorator');
+      expect(Object.keys(wcm.decorators)).toEqual(['happy-pack-decorator']);
+    });
+
+    test('Decorators run on the final config before being exported', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.addDecorator('set-parallelism', config => {
+        return {
+          ...config,
+          paralellism: 0,
+        };
+      });
+      wcm.addDecorator('increase-parallelism', config => {
+        config.paralellism++;
+        return config;
+      });
+      const config = wcm.generateWebpackConfig();
+      expect(config.paralellism).toBe(1);
+    });
   });
 });
 
