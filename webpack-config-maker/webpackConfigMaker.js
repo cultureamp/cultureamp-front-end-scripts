@@ -178,7 +178,22 @@ module.exports = class WebpackConfigMaker {
     return output;
   }
 
-  usePresets(presets) {}
+  usePreset(preset) {
+    if (typeof preset === 'string') {
+      try {
+        preset = require(preset);
+      } catch (err) {
+        throw `Cannot load preset ${preset}: ${err}`;
+      }
+    }
+    preset(this);
+  }
+
+  usePresets(presets) {
+    for (let preset of presets) {
+      this.usePreset(preset);
+    }
+  }
 
   setDevSourceMapType(type) {
     this.devSourceMapType = type;

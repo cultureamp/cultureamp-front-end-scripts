@@ -646,6 +646,51 @@ describe('our webpack config thing', () => {
       expect(config.paralellism).toBe(1);
     });
   });
+
+  describe('Using presets', () => {
+    test('A preset function runs immediately', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.usePreset(configMaker => {
+        configMaker.setEntryPoint('src/app.js');
+      });
+      expect(wcm.entryPoints).toEqual(['src/app.js']);
+    });
+
+    test('If a string is provided, it will be treated as a path to import the preset function', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.usePreset('./__fixtures__/examplePreset.js');
+      expect(wcm.sourceDirectories).toEqual([
+        'app/client/modules',
+        'lib/client/modules',
+      ]);
+    });
+
+    test('If you provide a string and that is not a valid path, an error is thrown', () => {
+      const wcm = new WebpackConfigMaker();
+      expect(() => {
+        wcm.usePreset('./__fixtures__/unknown.js');
+      }).toThrowError('Cannot load preset ./__fixtures__/unknown.js');
+    });
+
+    test('You can use multiple presets with usePresets()', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.usePreset(configMaker => {
+        configMaker.setOutputPath('bin');
+      });
+      wcm.usePresets([
+        configMaker => {
+          configMaker.setEntryPoint('src/app.js');
+        },
+        './__fixtures__/examplePreset.js',
+      ]);
+      expect(wcm.outputPath).toEqual(process.env.PWD + '/bin');
+      expect(wcm.entryPoints).toEqual(['src/app.js']);
+      expect(wcm.sourceDirectories).toEqual([
+        'app/client/modules',
+        'lib/client/modules',
+      ]);
+    });
+  });
 });
 
 // webpackConfigurator.usePreset(require("elm-preset"))
