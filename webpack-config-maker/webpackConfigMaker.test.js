@@ -1,4 +1,4 @@
-const WebpackConfigMaker = require('./WebpackConfigMaker');
+const WebpackConfigMaker = require('./webpackConfigMaker');
 
 describe('our webpack config thing', () => {
   describe('allows you to set an entry point', () => {
