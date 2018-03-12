@@ -1,8 +1,44 @@
+// @flow
 const path = require('path');
 const merge = require('lodash.merge');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
-module.exports = class WebpackConfigMaker {
+/*::
+type LoaderOpts = { loader?: string };
+type RuleOpts = { extensions: string[], loaders: string[] };
+type WebpackConfig = {};
+type Preset = WebpackConfigMaker => void;
+type Decorator = WebpackConfig => WebpackConfig;
+type SourceMapType =
+  | null
+  | 'eval'
+  | 'cheap-eval-source-map'
+  | 'cheap-module-eval-source-map'
+  | 'eval-source-map'
+  | 'cheap-source-map'
+  | 'cheap-module-source-map'
+  | 'inline-cheap-source-map'
+  | 'inline-cheap-module-source-map'
+  | 'source-map'
+  | 'inline-source-map'
+  | 'hidden-source-map'
+  | 'nosources-source-map';
+*/
+
+class WebpackConfigMaker {
+  /*::
+  loaders: { [string]: LoaderOpts };
+  plugins: { [string]: any };
+  decorators: { [string]: Decorator };
+  rules: RuleOpts[];
+  sourceDirectories: string[];
+  entryPoints: string[];
+  outputPath: string;
+  publicPath: string;
+  filename: string;
+  prodSourceMapType: SourceMapType;
+  devSourceMapType: SourceMapType;
+  */
   constructor() {
     this.loaders = {};
     this.plugins = {};
@@ -17,27 +53,30 @@ module.exports = class WebpackConfigMaker {
     this.setProdSourceMapType('source-map');
   }
 
-  setSourceDirectories(dirs) {
+  setSourceDirectories(dirs /* :string[] */) {
     this.sourceDirectories = dirs;
   }
 
-  setSourceDirectory(dir) {
+  setSourceDirectory(dir /* :string */) {
     this.sourceDirectories = [dir];
   }
 
-  setEntryPoints(entryPoints) {
+  setEntryPoints(entryPoints /* :string[] */) {
     this.entryPoints = entryPoints;
   }
 
-  setEntryPoint(entryPoint) {
+  setEntryPoint(entryPoint /* :string */) {
     this.entryPoints = [entryPoint];
   }
 
-  setOutputPath(outputPath) {
+  setOutputPath(outputPath /* :string */) {
+    if (!process.env.PWD) {
+      throw 'The environment variable $PWD was not set';
+    }
     this.outputPath = path.resolve(process.env.PWD, outputPath);
   }
 
-  setOutputPathRelativeToHost(outputPublicPath) {
+  setOutputPathRelativeToHost(outputPublicPath /* :string */) {
     if (!outputPublicPath.startsWith('/')) {
       outputPublicPath = '/' + outputPublicPath;
     }
@@ -50,11 +89,11 @@ module.exports = class WebpackConfigMaker {
   }
 
   /* e.g. [name].bundle.js */
-  setFilenameTemplate(template) {
+  setFilenameTemplate(template /* :string */) {
     this.filename = template;
   }
 
-  registerLoader(name, opts) {
+  registerLoader(name /* :string */, opts /* :LoaderOpts */) {
     if (this.loaders.hasOwnProperty(name)) {
       throw new Error('A loader with that name has already been registered.');
     }
@@ -67,19 +106,29 @@ module.exports = class WebpackConfigMaker {
     this.loaders[name] = opts;
   }
 
-  modifyLoader(name, opts) {
+  modifyLoader(name /* :string */, opts /* :LoaderOpts */) {
     merge(this.loaders[name], opts);
   }
 
-  addPlugin(name, pluginInstance) {
+  addPlugin(name /* :string */, pluginInstance /* :any */) {
     this.plugins[name] = pluginInstance;
   }
 
-  removePlugin(name) {
+  removePlugin(name /* :string */) {
     delete this.plugins[name];
   }
 
-  addRule(opts) {
+  addRule(
+    opts /* :{
+    extension?: string,
+    extensions?: string[],
+    loader?: string,
+    loaders?: string[],
+    include?: string | string[],
+    exclude?: string | string[],
+    extractText?: boolean,
+  } */
+  ) {
     const rule = {};
 
     if (opts.extension && !opts.extensions) {
@@ -140,7 +189,7 @@ module.exports = class WebpackConfigMaker {
     this.rules.push(rule);
   }
 
-  _generateRule(rule) {
+  _generateRule(rule /* :RuleOpts */) {
     const output = {};
 
     if (rule.include) {
@@ -178,9 +227,10 @@ module.exports = class WebpackConfigMaker {
     return output;
   }
 
-  usePreset(preset) {
+  usePreset(preset /* :string | Preset  */) {
     if (typeof preset === 'string') {
       try {
+        // $FlowFixMe:
         preset = require(preset);
       } catch (err) {
         throw `Cannot load preset ${preset}: ${err}`;
@@ -189,29 +239,29 @@ module.exports = class WebpackConfigMaker {
     preset(this);
   }
 
-  usePresets(presets) {
+  usePresets(presets /* :Preset[] */) {
     for (let preset of presets) {
       this.usePreset(preset);
     }
   }
 
-  setDevSourceMapType(type) {
+  setDevSourceMapType(type /* :SourceMapType */) {
     this.devSourceMapType = type;
   }
 
-  setProdSourceMapType(type) {
+  setProdSourceMapType(type /* :SourceMapType */) {
     this.prodSourceMapType = type;
   }
 
-  addDecorator(name, decoratorFn) {
+  addDecorator(name /* :string */, decoratorFn /* :Decorator */) {
     this.decorators[name] = decoratorFn;
   }
 
-  removeDecorator(name) {
+  removeDecorator(name /* :string */) {
     delete this.decorators[name];
   }
 
-  generateWebpackConfig() {
+  generateWebpackConfig() /* :WebpackConfig */ {
     const config = {
       entry: this.entryPoints,
       resolve: {
@@ -231,13 +281,22 @@ module.exports = class WebpackConfigMaker {
           ? this.prodSourceMapType
           : this.devSourceMapType,
     };
+    // $FlowFixMe: flow doesn't correctly guess that Object.values() will give a type of `Decorator[]`.
     return decorateConfig(config, Object.values(this.decorators));
   }
-};
-
-function decorateConfig(config, decorators) {
-  // Apply a series of transformations on a config, returning the new ("decorated") config.
-  return decorators.reduce((decoratedConfig, decorator) => {
-    return decorator(decoratedConfig);
-  }, config);
 }
+
+function decorateConfig(
+  config /* :WebpackConfig */,
+  decorators /* :Decorator[] */
+) {
+  // Apply a series of transformations on a config, returning the new ("decorated") config.
+  return decorators.reduce(
+    (decoratedConfig, decorator) /* :WebpackConfig */ => {
+      return decorator(decoratedConfig);
+    },
+    config
+  );
+}
+
+module.exports = WebpackConfigMaker;
