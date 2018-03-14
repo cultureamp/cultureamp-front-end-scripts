@@ -286,6 +286,7 @@ describe('our webpack config thing', () => {
       const wcm = new WebpackConfigMaker();
 
       expect(() => {
+        wcm.registerLoader('top-loader');
         wcm.addRule({
           include: 'components/ui',
           loaders: ['top-loader'],

@@ -11,6 +11,9 @@ function log {
 
 log "G'day Trav"
 
+log "Run flow on the JS in this repo"
+yarn flow
+
 log "Run Jest tests for Webpack Config Maker"
 yarn jest webpack-config-maker
 
