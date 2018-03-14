@@ -11,4 +11,5 @@ module.exports = {
     'stage-2',
     'react',
   ],
+  plugins: ['transform-proto-to-assign'],
 };
