@@ -683,4 +683,34 @@ describe('our webpack config thing', () => {
       ]);
     });
   });
+
+  describe('environment specific helpers', () => {
+    let pwd;
+
+    beforeEach(() => {
+      pwd = process.env.PWD;
+      process.env.PWD = '/user/workspace';
+    });
+
+    afterEach(() => {
+      process.env.PWD = pwd;
+    });
+
+    test('isCachingEnabled() is false by default', () => {
+      const wcm = new WebpackConfigMaker();
+      expect(wcm.isCachingEnabled()).toBeFalsy();
+    });
+    test('isHotModuleReplacementEnabled() is false by default', () => {
+      const wcm = new WebpackConfigMaker();
+      expect(wcm.isHotModuleReplacementEnabled()).toBeFalsy();
+    });
+    test('getProjectDirectory() returns the current PWD', () => {
+      const wcm = new WebpackConfigMaker();
+      expect(wcm.getProjectDirectory()).toBe('/user/workspace');
+    });
+    test('getCacheDirectory() returns $PWD/tmp/cache by default', () => {
+      const wcm = new WebpackConfigMaker();
+      expect(wcm.getCacheDirectory()).toBe('/user/workspace/tmp/cache');
+    });
+  });
 });

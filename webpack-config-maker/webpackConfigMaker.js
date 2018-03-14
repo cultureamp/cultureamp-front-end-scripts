@@ -67,6 +67,25 @@ class WebpackConfigMaker {
     this.setProdSourceMapType('source-map');
   }
 
+  isCachingEnabled() {
+    return false;
+  }
+
+  isHotModuleReplacementEnabled() {
+    return false;
+  }
+
+  getProjectDirectory() {
+    if (!process.env.PWD) {
+      throw 'The environment variable $PWD was not set';
+    }
+    return process.env.PWD;
+  }
+
+  getCacheDirectory() {
+    return path.resolve(this.getProjectDirectory(), 'tmp/cache');
+  }
+
   setSourceDirectories(dirs /* :string[] */) {
     this.sourceDirectories = dirs;
   }
@@ -84,10 +103,7 @@ class WebpackConfigMaker {
   }
 
   setOutputPath(outputPath /* :string */) {
-    if (!process.env.PWD) {
-      throw 'The environment variable $PWD was not set';
-    }
-    this.outputPath = path.resolve(process.env.PWD, outputPath);
+    this.outputPath = path.resolve(this.getProjectDirectory(), outputPath);
   }
 
   setOutputPathRelativeToHost(outputPublicPath /* :string */) {
@@ -279,7 +295,7 @@ class WebpackConfigMaker {
         },
         port: 8080,
         disableHostCheck: true,
-        hot: false,
+        hot: this.isHotModuleReplacementEnabled(),
       },
     };
     // $FlowFixMe: flow doesn't correctly guess that Object.values() will give a type of `Decorator[]`.
