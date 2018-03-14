@@ -5,7 +5,21 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 /*::
 type LoaderOpts = { loader?: string };
-type RuleOpts = { extensions: string[], loaders: string[] };
+type RuleOpts = {
+  extension?: string,
+  extensions?: string[],
+  loader?: string,
+  loaders?: string[],
+  include?: string | string[],
+  exclude?: string | string[],
+  extractText?: boolean,
+}
+type ProcessedRuleOpts = {
+  extensions: string[],
+  loaders: string[],
+  include?: string[],
+  exclude?: string[],
+};
 type WebpackConfig = {};
 type Preset = WebpackConfigMaker => void;
 type Decorator = WebpackConfig => WebpackConfig;
@@ -30,7 +44,7 @@ class WebpackConfigMaker {
   loaders: { [string]: LoaderOpts };
   plugins: { [string]: any };
   decorators: { [string]: Decorator };
-  rules: RuleOpts[];
+  rules: ProcessedRuleOpts[];
   sourceDirectories: string[];
   entryPoints: string[];
   outputPath: string;
@@ -118,19 +132,17 @@ class WebpackConfigMaker {
     delete this.plugins[name];
   }
 
-  addRule(
-    opts /* :{
-    extension?: string,
-    extensions?: string[],
-    loader?: string,
-    loaders?: string[],
-    include?: string | string[],
-    exclude?: string | string[],
-    extractText?: boolean,
-  } */
-  ) {
-    const rule = {};
+  addRule(opts /* :RuleOpts */) {
+    this.rules.push({
+      loaders: this._processRuleLoaders(opts),
+      extensions: this._processRuleExtensions(opts),
+      include: this._processRuleIncludeOrExclude(opts.include),
+      exclude: this._processRuleIncludeOrExclude(opts.exclude),
+      extractText: opts.extractText,
+    });
+  }
 
+  _processRuleExtensions(opts /* :RuleOpts */) {
     if (opts.extension && !opts.extensions) {
       opts.extensions = [opts.extension];
     }
@@ -139,8 +151,10 @@ class WebpackConfigMaker {
         'You must specify at least one file extension to create a rule.'
       );
     }
-    rule.extensions = opts.extensions;
+    return opts.extensions;
+  }
 
+  _processRuleLoaders(opts /* :RuleOpts */) {
     if (opts.loader && !opts.loaders) {
       opts.loaders = [opts.loader];
     }
@@ -149,64 +163,40 @@ class WebpackConfigMaker {
       throw new Error('You must specify at least one loader to create a rule.');
     }
 
-    if (opts.loaders) {
-      let missingLoaders = [];
-      for (let loader of opts.loaders) {
-        if (!this.loaders.hasOwnProperty(loader)) {
-          missingLoaders.push(loader);
-        }
-      }
-      if (missingLoaders.length > 0) {
-        throw new Error(
-          `The following loaders have not been registered: ${missingLoaders.join(
-            ', '
-          )}`
-        );
-      }
-      rule.loaders = opts.loaders;
-    }
-
-    if (opts.include) {
-      if (Array.isArray(opts.include)) {
-        rule.include = opts.include;
-      }
-      if (typeof opts.include === 'string') {
-        rule.include = [opts.include];
+    let missingLoaders = [];
+    for (let loader of opts.loaders) {
+      if (!this.loaders.hasOwnProperty(loader)) {
+        missingLoaders.push(loader);
       }
     }
-
-    if (opts.exclude) {
-      if (Array.isArray(opts.exclude)) {
-        rule.exclude = opts.exclude;
-      }
-      if (typeof opts.exclude === 'string') {
-        rule.exclude = [opts.exclude];
-      }
+    if (missingLoaders.length > 0) {
+      throw new Error(
+        `The following loaders have not been registered: ${missingLoaders.join(
+          ', '
+        )}`
+      );
     }
-
-    rule.extractText = opts.extractText;
-
-    this.rules.push(rule);
+    return opts.loaders;
   }
 
-  _generateRule(rule /* :RuleOpts */) {
-    const output = {};
-
-    if (rule.include) {
-      output.include =
-        typeof rule.include === 'string' ? [rule.include] : rule.include;
-    } else {
-      output.include = this.sourceDirectories;
+  _processRuleIncludeOrExclude(
+    value /* : typeof undefined | string | string[] */
+  ) {
+    if (Array.isArray(value)) {
+      return value;
     }
-
-    if (rule.exclude) {
-      output.exclude =
-        typeof rule.exclude === 'string' ? [rule.exclude] : rule.exclude;
+    if (typeof value === 'string') {
+      return [value];
     }
+  }
 
-    output.test = new RegExp(`\\.(${rule.extensions.join('|')})$`);
-
-    output.use = rule.loaders.map(loader => this.loaders[loader]);
+  _generateRule(rule /* :ProcessedRuleOpts */) {
+    const output = {
+      include: rule.include,
+      exclude: rule.exclude,
+      test: new RegExp(`\\.(${rule.extensions.join('|')})$`),
+      use: rule.loaders.map(loader => this.loaders[loader]),
+    };
 
     if (rule.extractText) {
       let plugin = this.plugins['ExtractTextPlugin'];

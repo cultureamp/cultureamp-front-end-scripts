@@ -281,15 +281,6 @@ describe('our webpack config thing', () => {
     });
   });
 
-  /*
-   * rule: {
-   *   extensions: [],
-   *   include: [],  // current source directories as default
-   *   exclude: [],
-   *   loaders: [],
-   * }
-   *
-   */
   describe('configuring rules', () => {
     test('requires you to specify at least one extension', () => {
       const wcm = new WebpackConfigMaker();
@@ -692,9 +683,3 @@ describe('our webpack config thing', () => {
     });
   });
 });
-
-// webpackConfigurator.usePreset(require("elm-preset"))
-//   - loads elm-loader, elm-css-modules-loader, elm-svg-loader
-
-// culture-amp-preset
-//  - elm-preset, react-preset, scss-postcss-preset

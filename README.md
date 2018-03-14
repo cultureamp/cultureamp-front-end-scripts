@@ -47,12 +47,12 @@ Then run `yarn start` and open http://localhost:8000/ to build, watch and previe
 
 ## Commands
 
-* `yarn start` - start a development server and rebuild on changes
+* `yarn start` - start a development server and rebuild as files change
 * `yarn build` - build production assets
 * `yarn test` or `yarn test --watch` - run jest tests
-* `yarn lint` - run eslint. Use `yarn lint --fix` to fix things.
+* `yarn lint` - run eslint to check code quality on your files
 * `yarn flow` - run flow for type checking
-* `yarn format` - run prettier on all JS and CSS files
+* `yarn format` - run prettier and `eslint --fix` on all JS and CSS files
 
 ## Project structure
 
@@ -142,7 +142,8 @@ module.exports = {
 
 ### ESLint
 
-By default our ESLint configuration will provide a collection of rules collected by Culture Amp over the years. It was originally based on the AirBNB style guide, and expects prettier to provide code formatting.
+By default our ESLint configuration will provide a collection of rules curated to Culture Amp's needs.
+It was originally based on the AirBNB style guide, and expects prettier to provide code formatting.
 
 You can provide your own ESLint configuration by supplying a file `eslint.config.js`:
 
