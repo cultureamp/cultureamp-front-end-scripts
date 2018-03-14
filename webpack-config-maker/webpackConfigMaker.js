@@ -270,6 +270,17 @@ class WebpackConfigMaker {
         process.env.NODE_ENV === 'production'
           ? this.prodSourceMapType
           : this.devSourceMapType,
+      // TODO: make `devServer` options configurable.
+      devServer: {
+        contentBase: this.publicPath,
+        overlay: {
+          warnings: true,
+          errors: true,
+        },
+        port: 8080,
+        disableHostCheck: true,
+        hot: false,
+      },
     };
     // $FlowFixMe: flow doesn't correctly guess that Object.values() will give a type of `Decorator[]`.
     return decorateConfig(config, Object.values(this.decorators));
