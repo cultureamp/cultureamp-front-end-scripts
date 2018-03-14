@@ -1,0 +1,14 @@
+[ignore]
+.*/yarn-cache/.*
+
+[include]
+<PROJECT_ROOT>/webpack-config-maker/
+<PROJECT_ROOT>/config/
+
+[options]
+module.name_mapper.extension='scss' -> 'cultureamp-front-end-scripts/config/flow/css-loader-stub'
+module.name_mapper.extension='elm' -> 'cultureamp-front-end-scripts/config/flow/url-loader-stub'
+module.name_mapper.extension='png' -> 'cultureamp-front-end-scripts/config/flow/url-loader-stub'
+module.name_mapper.extension='svg' -> 'cultureamp-front-end-scripts/config/flow/url-loader-stub'
+module.name_mapper.extension='gif' -> 'cultureamp-front-end-scripts/config/flow/url-loader-stub'
+module.name_mapper='.*\.\(jpg\|jpeg\)$' -> 'cultureamp-front-end-scripts/config/flow/url-loader-stub'

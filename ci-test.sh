@@ -11,6 +11,13 @@ function log {
 
 log "G'day Trav"
 
+log "Run flow on the JS in this repo"
+yarn flow
+
+log "Run Jest tests for Webpack Config Maker"
+yarn jest webpack-config-maker
+
+log "Clone the front-end-example repo"
 # Clone the example repo, install dependencies and link scripts
 yarn link
 rm -rf tmp
@@ -20,10 +27,11 @@ cd cultureamp-front-end-example
 yarn
 yarn link cultureamp-front-end-scripts
 
-# Run the tests
-yarn flow
-yarn lint
+log "Test front-end-example scripts run correctly"
+#yarn build
 yarn test
+yarn lint
+yarn flow
 yarn format
 
 log "Cheers Trav"
