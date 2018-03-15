@@ -451,6 +451,24 @@ describe('our webpack config thing', () => {
         );
       });
 
+      test('that useFirstMatchingLoader generates a oneOf rule()', () => {
+        const wcm = new WebpackConfigMaker();
+        wcm.registerLoader('url-loader', {});
+        wcm.registerLoader('file-loader', {});
+        wcm.addRule({
+          extensions: ['png', 'jpg', 'gif', 'svg'],
+          loaders: ['url-loader', 'file-loader'],
+          useFirstMatchingLoader: true,
+        });
+        const config = wcm.generateWebpackConfig();
+        const rule = config.module.rules[0];
+        expect(rule).toEqual(
+          expect.objectContaining({
+            oneOf: [{ loader: 'url-loader' }, { loader: 'file-loader' }],
+          })
+        );
+      });
+
       describe('when multiple loaders and rules are set', () => {
         const wcm = new WebpackConfigMaker();
         wcm.registerLoader('css-loader');

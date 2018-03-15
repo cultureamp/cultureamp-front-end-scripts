@@ -13,14 +13,16 @@ type RuleOpts = {
   include?: string | string[],
   exclude?: string | string[],
   extractText?: boolean,
+  useFirstMatchingLoader?: boolean,
 }
 type ProcessedRuleOpts = {
   extensions: string[],
   loaders: string[],
   include?: string[],
   exclude?: string[],
+  useFirstMatchingLoader?: boolean,
 };
-type WebpackConfig = {};
+type WebpackConfig = any;
 type Preset = WebpackConfigMaker => void;
 type Decorator = WebpackConfig => WebpackConfig;
 type SourceMapType =
@@ -167,6 +169,7 @@ class WebpackConfigMaker {
       include: this._processRuleIncludeOrExclude(opts.include),
       exclude: this._processRuleIncludeOrExclude(opts.exclude),
       extractText: opts.extractText,
+      useFirstMatchingLoader: opts.useFirstMatchingLoader,
     });
   }
 
@@ -224,6 +227,7 @@ class WebpackConfigMaker {
       exclude: rule.exclude,
       test: new RegExp(`\\.(${rule.extensions.join('|')})$`),
       use: rule.loaders.map(loader => this.loaders[loader]),
+      oneOf: undefined,
     };
 
     if (rule.extractText) {
@@ -240,6 +244,11 @@ class WebpackConfigMaker {
         fallback: 'style-loader',
         use: output.use,
       });
+    }
+
+    if (rule.useFirstMatchingLoader) {
+      output.oneOf = output.use;
+      output.use = undefined;
     }
 
     return output;
