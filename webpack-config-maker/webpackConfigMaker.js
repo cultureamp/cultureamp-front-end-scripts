@@ -75,6 +75,10 @@ class WebpackConfigMaker {
     return process.env.NODE_ENV === 'production';
   }
 
+  isDevServer() {
+    return path.basename(require.main.filename) === 'webpack-dev-server.js';
+  }
+
   isCachingEnabled() {
     return false;
   }
