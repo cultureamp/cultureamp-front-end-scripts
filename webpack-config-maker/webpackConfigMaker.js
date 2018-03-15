@@ -67,6 +67,14 @@ class WebpackConfigMaker {
     this.setProdSourceMapType('source-map');
   }
 
+  isDevelopmentMode() {
+    return process.env.NODE_ENV !== 'production';
+  }
+
+  isProductionMode() {
+    return process.env.NODE_ENV === 'production';
+  }
+
   isCachingEnabled() {
     return false;
   }
@@ -219,7 +227,7 @@ class WebpackConfigMaker {
       if (!plugin) {
         plugin = new ExtractTextPlugin({
           filename: '[name]-[contenthash].bundle.css',
-          disable: process.env.NODE_ENV !== 'production',
+          disable: this.isDevelopmentMode(),
         });
         this.addPlugin('ExtractTextPlugin', plugin);
       }
@@ -282,10 +290,9 @@ class WebpackConfigMaker {
         rules: this.rules.map(rule => this._generateRule(rule)),
       },
       plugins: Object.values(this.plugins),
-      devtool:
-        process.env.NODE_ENV === 'production'
-          ? this.prodSourceMapType
-          : this.devSourceMapType,
+      devtool: this.isProductionMode()
+        ? this.prodSourceMapType
+        : this.devSourceMapType,
       // TODO: make `devServer` options configurable.
       devServer: {
         contentBase: this.publicPath,

@@ -685,15 +685,31 @@ describe('our webpack config thing', () => {
   });
 
   describe('environment specific helpers', () => {
-    let pwd;
+    let pwd, nodeEnv;
 
     beforeEach(() => {
       pwd = process.env.PWD;
+      nodeEnv = process.env.NODE_ENV;
       process.env.PWD = '/user/workspace';
     });
 
     afterEach(() => {
       process.env.PWD = pwd;
+      process.env.NODE_ENV = nodeEnv;
+    });
+
+    test('development mode correctly sets isDevelopmentEnabeld() and isProductionEnabled()', () => {
+      process.env.NODE_ENV = 'development';
+      const wcm = new WebpackConfigMaker();
+      expect(wcm.isDevelopmentMode()).toBeTruthy();
+      expect(wcm.isProductionMode()).toBeFalsy();
+    });
+
+    test('production mode correctly sets isDevelopmentEnabeld() and isProductionEnabled()', () => {
+      process.env.NODE_ENV = 'production';
+      const wcm = new WebpackConfigMaker();
+      expect(wcm.isDevelopmentMode()).toBeFalsy();
+      expect(wcm.isProductionMode()).toBeTruthy();
     });
 
     test('isCachingEnabled() is false by default', () => {
