@@ -1,7 +1,6 @@
 // @flow
 
 const WebpackConfigMaker = require('../../../webpack-config-maker/');
-const requireWithFallback = require('../../../util/requireWithFallback.js');
 
 const sassPostCssPreset = (wcm /*: WebpackConfigMaker */) => {
   const preprocessorLoaders = ['postcss-loader', 'sass-loader'];
