@@ -17,5 +17,3 @@ module.name_mapper.extension='svg' -> 'cultureamp-front-end-scripts/config/flow/
 module.name_mapper.extension='gif' -> 'cultureamp-front-end-scripts/config/flow/url-loader-stub'
 module.name_mapper.extension='jpg' -> 'cultureamp-front-end-scripts/config/flow/url-loader-stub'
 module.name_mapper.extension='jpeg' -> 'cultureamp-front-end-scripts/config/flow/url-loader-stub'
-module.system.node.resolve_dirname=node_modules
-module.system.node.resolve_dirname=<PROJECT_ROOT>/src/
