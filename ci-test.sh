@@ -17,14 +17,14 @@ yarn flow
 log "Run Jest tests for Webpack Config Maker"
 yarn jest webpack-config-maker
 
-log "Clone the front-end-example repo"
-# Clone the example repo, install dependencies and link scripts
+log "Clone the front-end-example repo and install the current front-end-scripts"
 yarn link
-rm -rf tmp
-mkdir tmp && cd tmp
+FRONT_END_SCRIPTS_DIR=`pwd`
+rm -rf tmp && mkdir tmp && cd tmp
 git clone https://github.com/cultureamp/cultureamp-front-end-example.git
 cd cultureamp-front-end-example
 yarn
+yarn add "file:${FRONT_END_SCRIPTS_DIR}"
 yarn link cultureamp-front-end-scripts
 
 log "Test front-end-example scripts run correctly"
