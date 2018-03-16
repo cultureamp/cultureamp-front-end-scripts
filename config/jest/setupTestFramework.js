@@ -1,10 +1,7 @@
-import path from 'path';
-import util from 'util';
-import customMatchers from './utils/customMatchers';
-import acceptCallsTo from './utils/acceptCallsTo';
-import { configure } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
-import React from 'react';
+const customMatchers = require('./utils/customMatchers');
+const acceptCallsTo = require('./utils/acceptCallsTo');
+const configure = require('enzyme').configure;
+const Adapter = require('enzyme-adapter-react-16');
 
 configure({ adapter: new Adapter() });
 

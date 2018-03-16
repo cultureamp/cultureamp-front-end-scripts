@@ -1,4 +1,4 @@
-import isEqual from 'lodash.isequal';
+const isEqual = require('lodash.isequal');
 
 /**
  * Test deep equality between two values, allowing asymmetric results. This will use the standard
@@ -9,9 +9,9 @@ import isEqual from 'lodash.isequal';
  * which is not available as an exported module.
  * */
 
-export default function equals(a, b) {
+module.exports = function equals(a, b) {
   return isEqual(a, b, customMatcher);
-}
+};
 
 function customMatcher(a, b) {
   const aIsAsymmetric = isAsymmetric(a);
