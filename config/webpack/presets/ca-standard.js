@@ -8,7 +8,6 @@ const caStandard = (wcm /*: WebpackConfigMaker */) => {
     require('./sass-postcss'),
     require('./elm'),
     require('./static-assets'),
-    require('./elm'),
     require('./react-dev-tools'),
   ]);
 };
