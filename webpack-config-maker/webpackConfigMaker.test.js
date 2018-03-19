@@ -451,6 +451,24 @@ describe('our webpack config thing', () => {
         );
       });
 
+      test('that useFirstMatchingLoader generates a oneOf rule()', () => {
+        const wcm = new WebpackConfigMaker();
+        wcm.registerLoader('url-loader', {});
+        wcm.registerLoader('file-loader', {});
+        wcm.addRule({
+          extensions: ['png', 'jpg', 'gif', 'svg'],
+          loaders: ['url-loader', 'file-loader'],
+          useFirstMatchingLoader: true,
+        });
+        const config = wcm.generateWebpackConfig();
+        const rule = config.module.rules[0];
+        expect(rule).toEqual(
+          expect.objectContaining({
+            oneOf: [{ loader: 'url-loader' }, { loader: 'file-loader' }],
+          })
+        );
+      });
+
       describe('when multiple loaders and rules are set', () => {
         const wcm = new WebpackConfigMaker();
         wcm.registerLoader('css-loader');
@@ -681,6 +699,70 @@ describe('our webpack config thing', () => {
         'app/client/modules',
         'lib/client/modules',
       ]);
+    });
+  });
+
+  describe('environment specific helpers', () => {
+    let pwd, nodeEnv, mainFile;
+
+    beforeEach(() => {
+      pwd = process.env.PWD;
+      nodeEnv = process.env.NODE_ENV;
+      mainFile = require.main.filename;
+      process.env.PWD = '/user/workspace';
+    });
+
+    afterEach(() => {
+      process.env.PWD = pwd;
+      process.env.NODE_ENV = nodeEnv;
+      require.main.filename = nodeEnv;
+    });
+
+    test('development mode correctly sets isDevelopmentEnabeld() and isProductionEnabled()', () => {
+      process.env.NODE_ENV = 'development';
+      const wcm = new WebpackConfigMaker();
+      expect(wcm.isDevelopmentMode()).toBeTruthy();
+      expect(wcm.isProductionMode()).toBeFalsy();
+    });
+
+    test('production mode correctly sets isDevelopmentEnabeld() and isProductionEnabled()', () => {
+      process.env.NODE_ENV = 'production';
+      const wcm = new WebpackConfigMaker();
+      expect(wcm.isDevelopmentMode()).toBeFalsy();
+      expect(wcm.isProductionMode()).toBeTruthy();
+    });
+
+    test('isCachingEnabled() is false by default', () => {
+      const wcm = new WebpackConfigMaker();
+      expect(wcm.isCachingEnabled()).toBeFalsy();
+    });
+
+    test('isHotModuleReplacementEnabled() is false by default', () => {
+      const wcm = new WebpackConfigMaker();
+      expect(wcm.isHotModuleReplacementEnabled()).toBeFalsy();
+    });
+
+    test('getProjectDirectory() returns the current PWD', () => {
+      const wcm = new WebpackConfigMaker();
+      expect(wcm.getProjectDirectory()).toBe('/user/workspace');
+    });
+
+    test('getCacheDirectory() returns $PWD/tmp/cache by default', () => {
+      const wcm = new WebpackConfigMaker();
+      expect(wcm.getCacheDirectory()).toBe('/user/workspace/tmp/cache');
+    });
+
+    test('isDevServer() is true when using webpack-dev-server', () => {
+      require.main.filename =
+        '/user/workspace/node_modules/.bin/webpack-dev-server.js';
+      const wcm = new WebpackConfigMaker();
+      expect(wcm.isDevServer()).toBeTruthy();
+    });
+
+    test('isDevServer() is false when using normal webpack', () => {
+      require.main.filename = '/user/workspace/node_modules/.bin/webpack.js';
+      const wcm = new WebpackConfigMaker();
+      expect(wcm.isDevServer()).toBeFalsy();
     });
   });
 });

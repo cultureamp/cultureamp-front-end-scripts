@@ -5,9 +5,14 @@ var jestPreset = require('babel-preset-jest');
 var sourceMapPath = require('./sourceMapPath');
 var shouldBabelPreprocess = require('./shouldBabelPreprocess');
 var preprocessStylesheet = require('./preprocessStylesheet');
-var babelConfig = require(path.resolve(
+
+const customConfigPath = './babel.config.js';
+const defaultConfig = require(path.resolve(
   'node_modules/cultureamp-front-end-scripts/config/babel/babel.config.js'
 ));
+const babelConfig = fs.existsSync(customConfigPath)
+  ? require(customConfigPath)
+  : defaultConfig;
 
 module.exports = {
   process: function(src, filename) {
@@ -31,12 +36,17 @@ module.exports = {
         presets: [
           ...babelConfig.presets,
           jestPreset,
-          ["env", {
-            "targets": {
-              "node": "current"
-            }
-          }]
+          [
+            'env',
+            {
+              targets: {
+                node: 'current',
+              },
+            },
+          ],
         ],
+        // Even though Webpack 2 now supports them natively, Jest still needs ES6 imports transformed for it.
+        plugins: [...babelConfig.plugins, 'transform-es2015-modules-commonjs'],
         filename: filename,
         sourceMap: true,
         auxiliaryCommentBefore: ' istanbul ignore next ',

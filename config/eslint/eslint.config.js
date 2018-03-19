@@ -9,7 +9,7 @@ module.exports = {
       webpack: {
         config:
           process.env.PWD +
-          '/node_modules/cultureamp-front-end-scripts/config/webpack.config.js',
+          '/node_modules/cultureamp-front-end-scripts/config/webpack/webpack.config.js',
       },
     },
     'import/ignore': [

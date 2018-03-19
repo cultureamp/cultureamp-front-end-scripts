@@ -1,4 +1,4 @@
-import equals from './equals.js';
+const equals = require('./equals.js');
 
 /*
 acceptCalls to is a utility available globally in Jest tests which can be used
@@ -75,7 +75,7 @@ function addAcceptableCallMockImplementation(mockFn) {
   });
 }
 
-export default function acceptCallsTo(mockFn) {
+module.exports = function acceptCallsTo(mockFn) {
   if (!(typeof mockFn === 'function' && mockFn.mock)) {
     throw new Error(`expected a mock function, got ${util.inspect(mockFn)}`);
   }
@@ -122,4 +122,4 @@ export default function acceptCallsTo(mockFn) {
   }
 
   return makeChainableReturnValue();
-}
+};

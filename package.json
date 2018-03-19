@@ -14,8 +14,11 @@
     "cultureamp-front-end-scripts-format": "./scripts/format.sh"
   },
   "dependencies": {
+    "autoprefixer": "^8.1.0",
     "babel-core": "^6.26.0",
     "babel-eslint": "^8.2.2",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
+    "babel-plugin-transform-proto-to-assign": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-jest": "^22.4.1",

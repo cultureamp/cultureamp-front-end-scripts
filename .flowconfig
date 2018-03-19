@@ -1,9 +1,14 @@
 [ignore]
 .*/yarn-cache/.*
+.*node_modules/.*
+<PROJECT_ROOT>/tmp/
 
 [include]
 <PROJECT_ROOT>/webpack-config-maker/
 <PROJECT_ROOT>/config/
+
+[libs]
+<PROJECT_ROOT>/flow-typed/
 
 [options]
 module.name_mapper.extension='scss' -> 'cultureamp-front-end-scripts/config/flow/css-loader-stub'

@@ -13,14 +13,16 @@ type RuleOpts = {
   include?: string | string[],
   exclude?: string | string[],
   extractText?: boolean,
+  useFirstMatchingLoader?: boolean,
 }
 type ProcessedRuleOpts = {
   extensions: string[],
   loaders: string[],
   include?: string[],
   exclude?: string[],
+  useFirstMatchingLoader?: boolean,
 };
-type WebpackConfig = {};
+type WebpackConfig = any;
 type Preset = WebpackConfigMaker => void;
 type Decorator = WebpackConfig => WebpackConfig;
 type SourceMapType =
@@ -67,6 +69,37 @@ class WebpackConfigMaker {
     this.setProdSourceMapType('source-map');
   }
 
+  isDevelopmentMode() {
+    return process.env.NODE_ENV !== 'production';
+  }
+
+  isProductionMode() {
+    return process.env.NODE_ENV === 'production';
+  }
+
+  isDevServer() {
+    return path.basename(require.main.filename) === 'webpack-dev-server.js';
+  }
+
+  isCachingEnabled() {
+    return false;
+  }
+
+  isHotModuleReplacementEnabled() {
+    return false;
+  }
+
+  getProjectDirectory() {
+    if (!process.env.PWD) {
+      throw 'The environment variable $PWD was not set';
+    }
+    return process.env.PWD;
+  }
+
+  getCacheDirectory() {
+    return path.resolve(this.getProjectDirectory(), 'tmp/cache');
+  }
+
   setSourceDirectories(dirs /* :string[] */) {
     this.sourceDirectories = dirs;
   }
@@ -84,10 +117,7 @@ class WebpackConfigMaker {
   }
 
   setOutputPath(outputPath /* :string */) {
-    if (!process.env.PWD) {
-      throw 'The environment variable $PWD was not set';
-    }
-    this.outputPath = path.resolve(process.env.PWD, outputPath);
+    this.outputPath = path.resolve(this.getProjectDirectory(), outputPath);
   }
 
   setOutputPathRelativeToHost(outputPublicPath /* :string */) {
@@ -139,6 +169,7 @@ class WebpackConfigMaker {
       include: this._processRuleIncludeOrExclude(opts.include),
       exclude: this._processRuleIncludeOrExclude(opts.exclude),
       extractText: opts.extractText,
+      useFirstMatchingLoader: opts.useFirstMatchingLoader,
     });
   }
 
@@ -196,6 +227,7 @@ class WebpackConfigMaker {
       exclude: rule.exclude,
       test: new RegExp(`\\.(${rule.extensions.join('|')})$`),
       use: rule.loaders.map(loader => this.loaders[loader]),
+      oneOf: undefined,
     };
 
     if (rule.extractText) {
@@ -203,7 +235,7 @@ class WebpackConfigMaker {
       if (!plugin) {
         plugin = new ExtractTextPlugin({
           filename: '[name]-[contenthash].bundle.css',
-          disable: process.env.NODE_ENV !== 'production',
+          disable: this.isDevelopmentMode(),
         });
         this.addPlugin('ExtractTextPlugin', plugin);
       }
@@ -212,6 +244,11 @@ class WebpackConfigMaker {
         fallback: 'style-loader',
         use: output.use,
       });
+    }
+
+    if (rule.useFirstMatchingLoader) {
+      output.oneOf = output.use;
+      output.use = undefined;
     }
 
     return output;
@@ -266,10 +303,9 @@ class WebpackConfigMaker {
         rules: this.rules.map(rule => this._generateRule(rule)),
       },
       plugins: Object.values(this.plugins),
-      devtool:
-        process.env.NODE_ENV === 'production'
-          ? this.prodSourceMapType
-          : this.devSourceMapType,
+      devtool: this.isProductionMode()
+        ? this.prodSourceMapType
+        : this.devSourceMapType,
       // TODO: make `devServer` options configurable.
       devServer: {
         contentBase: this.publicPath,
@@ -279,7 +315,7 @@ class WebpackConfigMaker {
         },
         port: 8080,
         disableHostCheck: true,
-        hot: false,
+        hot: this.isHotModuleReplacementEnabled(),
       },
     };
     // $FlowFixMe: flow doesn't correctly guess that Object.values() will give a type of `Decorator[]`.

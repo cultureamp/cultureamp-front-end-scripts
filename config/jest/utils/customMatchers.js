@@ -16,4 +16,4 @@ const customMatchers = {
   },
 };
 
-export default customMatchers;
+module.exports = customMatchers;
