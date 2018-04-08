@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONFIG_FILE='$PWD/jest.config.js'
+CONFIG_FILE="$PWD/jest.config.js"
 
 if [ ! -f $CONFIG_FILE ]
   then
