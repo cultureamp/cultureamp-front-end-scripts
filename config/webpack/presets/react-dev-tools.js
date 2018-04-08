@@ -9,6 +9,7 @@ const reactDevToolsPreset = (wcm /*: WebpackConfigMaker */) => {
       test: require.resolve('react'),
       loader: 'expose-loader?React',
     });
+    return config;
   });
 };
 
