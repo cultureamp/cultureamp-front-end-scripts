@@ -60,7 +60,7 @@ class WebpackConfigMaker {
     this.plugins = {};
     this.decorators = {};
     this.rules = [];
-    this.setEntryPoint('src/main.js');
+    this.setEntryPoint('main.js');
     this.setSourceDirectories(['src']);
     this.setOutputPath('public/assets');
     this.setOutputPathRelativeToHost('/assets/');
@@ -101,11 +101,11 @@ class WebpackConfigMaker {
   }
 
   setSourceDirectories(dirs /* :string[] */) {
-    this.sourceDirectories = dirs;
+    this.sourceDirectories = dirs.map(dir => path.resolve(dir));
   }
 
   setSourceDirectory(dir /* :string */) {
-    this.sourceDirectories = [dir];
+    this.setSourceDirectories([dir]);
   }
 
   setEntryPoints(entryPoints /* :string[] */) {
