@@ -50,6 +50,8 @@ class WebpackConfigMaker {
   sourceDirectories: string[];
   entryPoints: string[];
   outputPath: string;
+  outputLibraryName: ?string;
+  outputLibraryType: undefined | 'var' | 'this' | 'window' | 'global' | 'amd' | 'umd';
   publicPath: string;
   filename: string;
   prodSourceMapType: SourceMapType;
@@ -130,6 +132,14 @@ class WebpackConfigMaker {
     }
 
     this.publicPath = outputPublicPath;
+  }
+
+  setOutputLibrary(
+    type /* : 'var' | 'this' | 'window' | 'global' | 'amd' | 'umd' */,
+    name /* :string */
+  ) {
+    this.outputLibraryName = name;
+    this.outputLibraryType = type;
   }
 
   /* e.g. [name].bundle.js */
@@ -298,6 +308,8 @@ class WebpackConfigMaker {
         path: this.outputPath,
         publicPath: this.publicPath,
         filename: this.filename,
+        library: this.outputLibraryName,
+        libraryTarget: this.outputLibraryType,
       },
       module: {
         rules: this.rules.map(rule => this._generateRule(rule)),
