@@ -10,7 +10,7 @@ const babelPreset = (wcm /*: WebpackConfigMaker */) => {
   const customConfigPath = path.resolve(pwd, 'babel.config.js');
   const importedConfig = requireWithFallback(
     customConfigPath,
-    '../../babel/babel.config.js'
+    require.resolve('../../babel/babel.config.js')
   );
 
   const babelOptions = {
