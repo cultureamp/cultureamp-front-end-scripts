@@ -20,6 +20,7 @@ type ProcessedRuleOpts = {
   loaders: string[],
   include?: string[],
   exclude?: string[],
+  extractText?: boolean,
   useFirstMatchingLoader?: boolean,
 };
 type WebpackConfig = any;
@@ -241,19 +242,11 @@ class WebpackConfigMaker {
     };
 
     if (rule.extractText) {
-      let plugin = this.plugins['ExtractTextPlugin'];
-      if (!plugin) {
-        plugin = new ExtractTextPlugin({
-          filename: '[name]-[contenthash].bundle.css',
-          disable: this.isDevelopmentMode(),
-        });
-        this.addPlugin('ExtractTextPlugin', plugin);
+      // Note: extract-text-webpack-plugin is not compatible with Wewbpack 4+.
+      // While we decide the best strategy going forward, we'll just use style-loader.
+      if (output.use) {
+        output.use = ['style-loader', ...output.use];
       }
-
-      output.use = plugin.extract({
-        fallback: 'style-loader',
-        use: output.use,
-      });
     }
 
     if (rule.useFirstMatchingLoader) {
@@ -299,6 +292,7 @@ class WebpackConfigMaker {
   }
 
   generateWebpackConfig() /* :WebpackConfig */ {
+    const hostDir = (this.outputPath + '/').replace(this.publicPath, '');
     const config = {
       entry: this.entryPoints,
       resolve: {
@@ -320,7 +314,7 @@ class WebpackConfigMaker {
         : this.devSourceMapType,
       // TODO: make `devServer` options configurable.
       devServer: {
-        contentBase: this.publicPath,
+        contentBase: hostDir,
         overlay: {
           warnings: true,
           errors: true,
