@@ -1,21 +1,7 @@
 const path = require('path');
+const WebpackConfigMaker = require('../../webpack-config-maker/');
 
-module.exports = {
-  entry: './src/main.js',
-  output: {
-    filename: '[name].bundle.js',
-    path: path.join(process.env.PWD, 'public/assets'),
-    publicPath: '/assets/',
-    sourceMapFilename: '[file].map',
-  },
-  devServer: {
-    contentBase: './public',
-    overlay: {
-      warnings: true,
-      errors: true,
-    },
-    port: 8082,
-    disableHostCheck: true,
-    hot: false,
-  },
-};
+const configMaker = new WebpackConfigMaker();
+configMaker.usePresets([require('./presets/ca-standard.js')]);
+
+module.exports = configMaker.generateWebpackConfig();
