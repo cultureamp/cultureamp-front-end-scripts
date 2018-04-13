@@ -10,11 +10,11 @@
 
 [options]
 module.name_mapper.extension='scss' -> 'cultureamp-front-end-scripts/config/flow/css-loader-stub'
+module.name_mapper.extension='svg' -> 'cultureamp-front-end-scripts/config/flow/svg-loader-stub'
 module.name_mapper.extension='elm' -> 'cultureamp-front-end-scripts/config/flow/url-loader-stub'
 module.name_mapper.extension='png' -> 'cultureamp-front-end-scripts/config/flow/url-loader-stub'
-module.name_mapper.extension='svg' -> 'cultureamp-front-end-scripts/config/flow/url-loader-stub'
 module.name_mapper.extension='gif' -> 'cultureamp-front-end-scripts/config/flow/url-loader-stub'
 module.name_mapper.extension='jpg' -> 'cultureamp-front-end-scripts/config/flow/url-loader-stub'
 module.name_mapper.extension='jpeg' -> 'cultureamp-front-end-scripts/config/flow/url-loader-stub'
 module.system.node.resolve_dirname=node_modules
-module.system.node.resolve_dirname=src
+module.system.node.resolve_dirname=./src
