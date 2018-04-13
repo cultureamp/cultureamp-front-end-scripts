@@ -24,6 +24,7 @@
     "babel-preset-env": "^1.6.1",
     "babel-preset-jest": "^22.4.3",
     "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "css-modules-loader-core2": "^0.0.1",
     "cultureamp-style-guide": "^11.1.0",
