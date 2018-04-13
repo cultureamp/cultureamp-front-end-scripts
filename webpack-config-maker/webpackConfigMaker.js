@@ -96,15 +96,15 @@ class WebpackConfigMaker {
     if (!process.env.PWD) {
       throw 'The environment variable $PWD was not set';
     }
-    return process.env.PWD;
+    return process.env.PWD || '.';
   }
 
   getCacheDirectory() {
-    return path.resolve(this.getProjectDirectory(), 'tmp/cache');
+    return this.resolveRelativePath('tmp/cache');
   }
 
   setSourceDirectories(dirs /* :string[] */) {
-    this.sourceDirectories = dirs.map(dir => path.resolve(dir));
+    this.sourceDirectories = dirs.map(dir => this.resolveRelativePath(dir));
   }
 
   setSourceDirectory(dir /* :string */) {
@@ -120,7 +120,7 @@ class WebpackConfigMaker {
   }
 
   setOutputPath(outputPath /* :string */) {
-    this.outputPath = path.resolve(this.getProjectDirectory(), outputPath);
+    this.outputPath = this.resolveRelativePath(outputPath);
   }
 
   setOutputPathRelativeToHost(outputPublicPath /* :string */) {
@@ -225,10 +225,10 @@ class WebpackConfigMaker {
     value /* : typeof undefined | string | string[] */
   ) {
     if (Array.isArray(value)) {
-      return value;
+      return value.map(path => this.resolveRelativePath(path));
     }
     if (typeof value === 'string') {
-      return [value];
+      return [this.resolveRelativePath(value)];
     }
   }
 
@@ -245,7 +245,7 @@ class WebpackConfigMaker {
       // Note: extract-text-webpack-plugin is not compatible with Wewbpack 4+.
       // While we decide the best strategy going forward, we'll just use style-loader.
       if (output.use) {
-        output.use = ['style-loader', ...output.use];
+        output.use = [{ loader: 'style-loader' }, ...output.use];
       }
     }
 
@@ -296,7 +296,10 @@ class WebpackConfigMaker {
     const config = {
       entry: this.entryPoints,
       resolve: {
-        modules: ['node_modules', ...this.sourceDirectories],
+        modules: [
+          this.resolveRelativePath('node_modules'),
+          ...this.sourceDirectories,
+        ],
       },
       output: {
         path: this.outputPath,
@@ -326,6 +329,10 @@ class WebpackConfigMaker {
     };
     // $FlowFixMe: flow doesn't correctly guess that Object.values() will give a type of `Decorator[]`.
     return decorateConfig(config, Object.values(this.decorators));
+  }
+
+  resolveRelativePath(relativePath /* :string */) {
+    return path.resolve(this.getProjectDirectory(), relativePath);
   }
 }
 
