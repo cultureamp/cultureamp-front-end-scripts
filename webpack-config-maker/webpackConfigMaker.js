@@ -52,7 +52,7 @@ class WebpackConfigMaker {
   entryPoints: string[];
   outputPath: string;
   outputLibraryName: ?string;
-  outputLibraryType: undefined | 'var' | 'this' | 'window' | 'global' | 'amd' | 'umd';
+  outputLibraryType: typeof undefined | 'var' | 'this' | 'window' | 'global' | 'amd' | 'umd';
   publicPath: string;
   filename: string;
   prodSourceMapType: SourceMapType;
