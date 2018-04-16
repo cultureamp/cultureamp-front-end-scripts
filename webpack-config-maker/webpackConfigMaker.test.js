@@ -72,44 +72,46 @@ describe('our webpack config thing', () => {
     });
   });
 
-  describe('allows you to set the output path', () => {
-    test('has a default of public/assets', () => {
+  describe('allows you to set the web root path', () => {
+    test('has a default of public/', () => {
       const wcm = new WebpackConfigMaker();
-
       const config = wcm.generateWebpackConfig();
-      expect(config.output.path).toEqual('/user/workspace/public/assets');
+      expect(config.output.path).toEqual('/user/workspace/public/assets/');
     });
 
-    test('allows changing the output path', () => {
+    test('allows changing the web root', () => {
       const wcm = new WebpackConfigMaker();
-      wcm.setOutputPath('public/bubble-tea');
+      wcm.setWebRoot('www');
 
       const config = wcm.generateWebpackConfig();
-      expect(config.output.path).toEqual('/user/workspace/public/bubble-tea');
+      expect(config.output.path).toEqual('/user/workspace/www/assets/');
     });
   });
 
-  describe('allows you to set the output public path', () => {
+  describe('allows you to set the asset folder relative to the webroot', () => {
     test('has a default of /assets', () => {
       const wcm = new WebpackConfigMaker();
 
       const config = wcm.generateWebpackConfig();
       expect(config.output.publicPath).toEqual('/assets/');
+      expect(config.output.path).toEqual('/user/workspace/public/assets/');
     });
 
-    test('allows changing the public path', () => {
+    test('allows changing the asset path', () => {
       const wcm = new WebpackConfigMaker();
-      wcm.setOutputPathRelativeToHost('/js/');
+      wcm.setAssetPathRelativeToWebRoot('/js/');
 
       const config = wcm.generateWebpackConfig();
+      expect(config.output.path).toEqual('/user/workspace/public/js/');
       expect(config.output.publicPath).toEqual('/js/');
     });
 
     test('always has a leading and trailing slash', () => {
       const wcm = new WebpackConfigMaker();
-      wcm.setOutputPathRelativeToHost('js');
+      wcm.setAssetPathRelativeToWebRoot('js');
 
       const config = wcm.generateWebpackConfig();
+      expect(config.output.path).toEqual('/user/workspace/public/js/');
       expect(config.output.publicPath).toEqual('/js/');
     });
   });
@@ -717,7 +719,7 @@ describe('our webpack config thing', () => {
     test('You can use multiple presets with usePresets()', () => {
       const wcm = new WebpackConfigMaker();
       wcm.usePreset(configMaker => {
-        configMaker.setOutputPath('bin');
+        configMaker.setWebRoot('bin');
       });
       wcm.usePresets([
         configMaker => {
@@ -725,7 +727,7 @@ describe('our webpack config thing', () => {
         },
         './__fixtures__/examplePreset.js',
       ]);
-      expect(wcm.outputPath).toEqual('/user/workspace/bin');
+      expect(wcm.webRootPath).toEqual('/user/workspace/bin');
       expect(wcm.entryPoints).toEqual(['src/app.js']);
       expect(wcm.sourceDirectories).toEqual([
         '/user/workspace/app/client/modules',

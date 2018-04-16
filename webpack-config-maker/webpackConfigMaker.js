@@ -50,10 +50,10 @@ class WebpackConfigMaker {
   rules: ProcessedRuleOpts[];
   sourceDirectories: string[];
   entryPoints: string[];
-  outputPath: string;
+  webRootPath: string;
+  assetPathRelativeToWebRoot: string;
   outputLibraryName: ?string;
   outputLibraryType: typeof undefined | 'var' | 'this' | 'window' | 'global' | 'amd' | 'umd';
-  publicPath: string;
   filename: string;
   prodSourceMapType: SourceMapType;
   devSourceMapType: SourceMapType;
@@ -65,8 +65,8 @@ class WebpackConfigMaker {
     this.rules = [];
     this.setEntryPoint('main.js');
     this.setSourceDirectories(['src']);
-    this.setOutputPath('public/assets');
-    this.setOutputPathRelativeToHost('/assets/');
+    this.setWebRoot('public/');
+    this.setAssetPathRelativeToWebRoot('/assets/');
     this.setFilenameTemplate('[name].bundle.js');
     this.setDevSourceMapType('cheap-source-map');
     this.setProdSourceMapType('source-map');
@@ -96,7 +96,7 @@ class WebpackConfigMaker {
     if (!process.env.PWD) {
       throw 'The environment variable $PWD was not set';
     }
-    return process.env.PWD || '.';
+    return process.env.PWD;
   }
 
   getCacheDirectory() {
@@ -119,20 +119,20 @@ class WebpackConfigMaker {
     this.entryPoints = [entryPoint];
   }
 
-  setOutputPath(outputPath /* :string */) {
-    this.outputPath = this.resolveRelativePath(outputPath);
+  setWebRoot(webRootPath /* :string */) {
+    this.webRootPath = this.resolveRelativePath(webRootPath);
   }
 
-  setOutputPathRelativeToHost(outputPublicPath /* :string */) {
-    if (!outputPublicPath.startsWith('/')) {
-      outputPublicPath = '/' + outputPublicPath;
+  setAssetPathRelativeToWebRoot(assetPath /* :string */) {
+    if (!assetPath.startsWith('/')) {
+      assetPath = '/' + assetPath;
     }
 
-    if (!outputPublicPath.endsWith('/')) {
-      outputPublicPath = outputPublicPath + '/';
+    if (!assetPath.endsWith('/')) {
+      assetPath = assetPath + '/';
     }
 
-    this.publicPath = outputPublicPath;
+    this.assetPathRelativeToWebRoot = assetPath;
   }
 
   setOutputLibrary(
@@ -242,7 +242,7 @@ class WebpackConfigMaker {
     };
 
     if (rule.extractText) {
-      // Note: extract-text-webpack-plugin is not compatible with Wewbpack 4+.
+      // Note: extract-text-webpack-plugin is not compatible with Webpack 4+.
       // While we decide the best strategy going forward, we'll just use style-loader.
       if (output.use) {
         output.use = [{ loader: 'style-loader' }, ...output.use];
@@ -292,7 +292,8 @@ class WebpackConfigMaker {
   }
 
   generateWebpackConfig() /* :WebpackConfig */ {
-    const hostDir = (this.outputPath + '/').replace(this.publicPath, '');
+    const outputPath = this.webRootPath + this.assetPathRelativeToWebRoot;
+
     const config = {
       entry: this.entryPoints,
       resolve: {
@@ -302,8 +303,8 @@ class WebpackConfigMaker {
         ],
       },
       output: {
-        path: this.outputPath,
-        publicPath: this.publicPath,
+        path: outputPath,
+        publicPath: this.assetPathRelativeToWebRoot,
         filename: this.filename,
         library: this.outputLibraryName,
         libraryTarget: this.outputLibraryType,
@@ -317,7 +318,7 @@ class WebpackConfigMaker {
         : this.devSourceMapType,
       // TODO: make `devServer` options configurable.
       devServer: {
-        contentBase: hostDir,
+        contentBase: this.webRootPath,
         overlay: {
           warnings: true,
           errors: true,
