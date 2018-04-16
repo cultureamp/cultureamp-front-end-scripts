@@ -20,6 +20,7 @@ type ProcessedRuleOpts = {
   loaders: string[],
   include?: string[],
   exclude?: string[],
+  extractText?: boolean,
   useFirstMatchingLoader?: boolean,
 };
 type WebpackConfig = any;
@@ -49,8 +50,10 @@ class WebpackConfigMaker {
   rules: ProcessedRuleOpts[];
   sourceDirectories: string[];
   entryPoints: string[];
-  outputPath: string;
-  publicPath: string;
+  webRootPath: string;
+  assetPathRelativeToWebRoot: string;
+  outputLibraryName: ?string;
+  outputLibraryType: typeof undefined | 'var' | 'this' | 'window' | 'global' | 'amd' | 'umd';
   filename: string;
   prodSourceMapType: SourceMapType;
   devSourceMapType: SourceMapType;
@@ -60,10 +63,10 @@ class WebpackConfigMaker {
     this.plugins = {};
     this.decorators = {};
     this.rules = [];
-    this.setEntryPoint('src/main.js');
+    this.setEntryPoint('main.js');
     this.setSourceDirectories(['src']);
-    this.setOutputPath('public/assets');
-    this.setOutputPathRelativeToHost('/assets/');
+    this.setWebRoot('public/');
+    this.setAssetPathRelativeToWebRoot('/assets/');
     this.setFilenameTemplate('[name].bundle.js');
     this.setDevSourceMapType('cheap-source-map');
     this.setProdSourceMapType('source-map');
@@ -97,15 +100,15 @@ class WebpackConfigMaker {
   }
 
   getCacheDirectory() {
-    return path.resolve(this.getProjectDirectory(), 'tmp/cache');
+    return this.resolveRelativePath('tmp/cache');
   }
 
   setSourceDirectories(dirs /* :string[] */) {
-    this.sourceDirectories = dirs;
+    this.sourceDirectories = dirs.map(dir => this.resolveRelativePath(dir));
   }
 
   setSourceDirectory(dir /* :string */) {
-    this.sourceDirectories = [dir];
+    this.setSourceDirectories([dir]);
   }
 
   setEntryPoints(entryPoints /* :string[] */) {
@@ -116,20 +119,28 @@ class WebpackConfigMaker {
     this.entryPoints = [entryPoint];
   }
 
-  setOutputPath(outputPath /* :string */) {
-    this.outputPath = path.resolve(this.getProjectDirectory(), outputPath);
+  setWebRoot(webRootPath /* :string */) {
+    this.webRootPath = this.resolveRelativePath(webRootPath);
   }
 
-  setOutputPathRelativeToHost(outputPublicPath /* :string */) {
-    if (!outputPublicPath.startsWith('/')) {
-      outputPublicPath = '/' + outputPublicPath;
+  setAssetPathRelativeToWebRoot(assetPath /* :string */) {
+    if (!assetPath.startsWith('/')) {
+      assetPath = '/' + assetPath;
     }
 
-    if (!outputPublicPath.endsWith('/')) {
-      outputPublicPath = outputPublicPath + '/';
+    if (!assetPath.endsWith('/')) {
+      assetPath = assetPath + '/';
     }
 
-    this.publicPath = outputPublicPath;
+    this.assetPathRelativeToWebRoot = assetPath;
+  }
+
+  setOutputLibrary(
+    type /* : 'var' | 'this' | 'window' | 'global' | 'amd' | 'umd' */,
+    name /* :string */
+  ) {
+    this.outputLibraryName = name;
+    this.outputLibraryType = type;
   }
 
   /* e.g. [name].bundle.js */
@@ -214,10 +225,10 @@ class WebpackConfigMaker {
     value /* : typeof undefined | string | string[] */
   ) {
     if (Array.isArray(value)) {
-      return value;
+      return value.map(path => this.resolveRelativePath(path));
     }
     if (typeof value === 'string') {
-      return [value];
+      return [this.resolveRelativePath(value)];
     }
   }
 
@@ -231,19 +242,11 @@ class WebpackConfigMaker {
     };
 
     if (rule.extractText) {
-      let plugin = this.plugins['ExtractTextPlugin'];
-      if (!plugin) {
-        plugin = new ExtractTextPlugin({
-          filename: '[name]-[contenthash].bundle.css',
-          disable: this.isDevelopmentMode(),
-        });
-        this.addPlugin('ExtractTextPlugin', plugin);
+      // Note: extract-text-webpack-plugin is not compatible with Webpack 4+.
+      // While we decide the best strategy going forward, we'll just use style-loader.
+      if (output.use) {
+        output.use = [{ loader: 'style-loader' }, ...output.use];
       }
-
-      output.use = plugin.extract({
-        fallback: 'style-loader',
-        use: output.use,
-      });
     }
 
     if (rule.useFirstMatchingLoader) {
@@ -289,15 +292,22 @@ class WebpackConfigMaker {
   }
 
   generateWebpackConfig() /* :WebpackConfig */ {
+    const outputPath = this.webRootPath + this.assetPathRelativeToWebRoot;
+
     const config = {
       entry: this.entryPoints,
       resolve: {
-        modules: ['node_modules', ...this.sourceDirectories],
+        modules: [
+          this.resolveRelativePath('node_modules'),
+          ...this.sourceDirectories,
+        ],
       },
       output: {
-        path: this.outputPath,
-        publicPath: this.publicPath,
+        path: outputPath,
+        publicPath: this.assetPathRelativeToWebRoot,
         filename: this.filename,
+        library: this.outputLibraryName,
+        libraryTarget: this.outputLibraryType,
       },
       module: {
         rules: this.rules.map(rule => this._generateRule(rule)),
@@ -308,7 +318,7 @@ class WebpackConfigMaker {
         : this.devSourceMapType,
       // TODO: make `devServer` options configurable.
       devServer: {
-        contentBase: this.publicPath,
+        contentBase: this.webRootPath,
         overlay: {
           warnings: true,
           errors: true,
@@ -320,6 +330,10 @@ class WebpackConfigMaker {
     };
     // $FlowFixMe: flow doesn't correctly guess that Object.values() will give a type of `Decorator[]`.
     return decorateConfig(config, Object.values(this.decorators));
+  }
+
+  resolveRelativePath(relativePath /* :string */) {
+    return path.resolve(this.getProjectDirectory(), relativePath);
   }
 }
 

@@ -11,18 +11,25 @@ const staticAssetsPreset = (wcm /*: WebpackConfigMaker */) => {
   };
 
   wcm.registerLoader('file-loader', {
+    options: fileLoaderOptions,
+  });
+
+  wcm.registerLoader('forced-file-loader', {
+    loader: 'file-loader',
     resourceQuery: '?forceAsset',
     options: fileLoaderOptions,
   });
 
   wcm.registerLoader('url-loader', {
-    ...fileLoaderOptions,
-    limit: 10000, // Only apply to files below this size (in bytes)
+    options: {
+      ...fileLoaderOptions,
+      limit: 10000, // Only apply to files below this size (in bytes)
+    },
   });
 
   wcm.addRule({
     extensions: ['png', 'gif', 'jpg', 'svg'],
-    loaders: ['file-loader', 'url-loader'],
+    loaders: ['forced-file-loader', 'url-loader'],
     useFirstMatchingLoader: true,
   });
 

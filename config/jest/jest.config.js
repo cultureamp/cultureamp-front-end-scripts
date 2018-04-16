@@ -14,7 +14,9 @@ module.exports = {
   setupTestFrameworkScriptFile:
     '<rootDir>/node_modules/cultureamp-front-end-scripts/config/jest/setupTestFramework.js',
   cacheDirectory: '<rootDir>/tmp/cache/jest',
-  transformIgnorePatterns: ['/node_modules/.*\\.js$'],
+  transformIgnorePatterns: [
+    '/node_modules/(?!cultureamp-style-guide)/.*\\.js$',
+  ],
   moduleDirectories: ['node_modules', 'src'],
   modulePathIgnorePatterns: ['<rootDir>/node_modules', '<rootDir>/tmp'],
   roots: ['<rootDir>/src'],

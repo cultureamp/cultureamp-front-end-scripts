@@ -1,28 +1,39 @@
 const WebpackConfigMaker = require('./webpackConfigMaker');
 
+let pwd;
+
+beforeEach(() => {
+  pwd = process.env.PWD;
+  process.env.PWD = '/user/workspace';
+});
+
+afterEach(() => {
+  process.env.PWD = pwd;
+});
+
 describe('our webpack config thing', () => {
   describe('allows you to set an entry point', () => {
-    test('has a default of src/main.js', () => {
+    test('has a default of main.js', () => {
       const wcm = new WebpackConfigMaker();
 
       const config = wcm.generateWebpackConfig();
-      expect(config.entry).toEqual(['src/main.js']);
+      expect(config.entry).toEqual(['main.js']);
     });
 
     test('allows you to set a single entry point', () => {
       const wcm = new WebpackConfigMaker();
-      wcm.setEntryPoint('src/app/app.js');
+      wcm.setEntryPoint('app/app.js');
 
       const config = wcm.generateWebpackConfig();
-      expect(config.entry).toEqual(['src/app/app.js']);
+      expect(config.entry).toEqual(['app/app.js']);
     });
 
     test('allows you to set multiple entry points', () => {
       const wcm = new WebpackConfigMaker();
-      wcm.setEntryPoints(['src/app/app.js', 'src/main.js']);
+      wcm.setEntryPoints(['app/app.js', 'main.js']);
 
       const config = wcm.generateWebpackConfig();
-      expect(config.entry).toEqual(['src/app/app.js', 'src/main.js']);
+      expect(config.entry).toEqual(['app/app.js', 'main.js']);
     });
   });
 
@@ -31,7 +42,10 @@ describe('our webpack config thing', () => {
       const wcm = new WebpackConfigMaker();
 
       const config = wcm.generateWebpackConfig();
-      expect(config.resolve.modules).toEqual(['node_modules', 'src']);
+      expect(config.resolve.modules).toEqual([
+        '/user/workspace/node_modules',
+        '/user/workspace/src',
+      ]);
     });
 
     test('allows changing the src dir', () => {
@@ -40,9 +54,9 @@ describe('our webpack config thing', () => {
 
       const config = wcm.generateWebpackConfig();
       expect(config.resolve.modules).toEqual([
-        'node_modules',
-        'app/client/modules',
-        'lib/client/modules',
+        '/user/workspace/node_modules',
+        '/user/workspace/app/client/modules',
+        '/user/workspace/lib/client/modules',
       ]);
     });
 
@@ -52,61 +66,52 @@ describe('our webpack config thing', () => {
 
       const config = wcm.generateWebpackConfig();
       expect(config.resolve.modules).toEqual([
-        'node_modules',
-        'app/client/modules',
+        '/user/workspace/node_modules',
+        '/user/workspace/app/client/modules',
       ]);
     });
   });
 
-  describe('allows you to set the output path', () => {
-    let pwd;
-
-    beforeEach(() => {
-      pwd = process.env.PWD;
-      process.env.PWD = '/user/workspace';
+  describe('allows you to set the web root path', () => {
+    test('has a default of public/', () => {
+      const wcm = new WebpackConfigMaker();
+      const config = wcm.generateWebpackConfig();
+      expect(config.output.path).toEqual('/user/workspace/public/assets/');
     });
 
-    test('has a default of public/assets', () => {
+    test('allows changing the web root', () => {
       const wcm = new WebpackConfigMaker();
+      wcm.setWebRoot('www');
 
       const config = wcm.generateWebpackConfig();
-      expect(config.output.path).toEqual('/user/workspace/public/assets');
-    });
-
-    test('allows changing the output path', () => {
-      const wcm = new WebpackConfigMaker();
-      wcm.setOutputPath('public/bubble-tea');
-
-      const config = wcm.generateWebpackConfig();
-      expect(config.output.path).toEqual('/user/workspace/public/bubble-tea');
-    });
-
-    afterEach(() => {
-      process.env.PWD = pwd;
+      expect(config.output.path).toEqual('/user/workspace/www/assets/');
     });
   });
 
-  describe('allows you to set the output public path', () => {
+  describe('allows you to set the asset folder relative to the webroot', () => {
     test('has a default of /assets', () => {
       const wcm = new WebpackConfigMaker();
 
       const config = wcm.generateWebpackConfig();
       expect(config.output.publicPath).toEqual('/assets/');
+      expect(config.output.path).toEqual('/user/workspace/public/assets/');
     });
 
-    test('allows changing the public path', () => {
+    test('allows changing the asset path', () => {
       const wcm = new WebpackConfigMaker();
-      wcm.setOutputPathRelativeToHost('/js/');
+      wcm.setAssetPathRelativeToWebRoot('/js/');
 
       const config = wcm.generateWebpackConfig();
+      expect(config.output.path).toEqual('/user/workspace/public/js/');
       expect(config.output.publicPath).toEqual('/js/');
     });
 
     test('always has a leading and trailing slash', () => {
       const wcm = new WebpackConfigMaker();
-      wcm.setOutputPathRelativeToHost('js');
+      wcm.setAssetPathRelativeToWebRoot('js');
 
       const config = wcm.generateWebpackConfig();
+      expect(config.output.path).toEqual('/user/workspace/public/js/');
       expect(config.output.publicPath).toEqual('/js/');
     });
   });
@@ -118,7 +123,29 @@ describe('our webpack config thing', () => {
       const config = wcm.generateWebpackConfig();
       expect(config.output.filename).toEqual('[name].bundle.js');
     });
-    test('allows changing it', () => {});
+
+    test('allows changing it', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.setFilenameTemplate('[name].dist.js');
+      const config = wcm.generateWebpackConfig();
+      expect(config.output.filename).toEqual('[name].dist.js');
+    });
+  });
+
+  describe('allows you to set a library type to target', () => {
+    test('does not produce a library bundle by default', () => {
+      const wcm = new WebpackConfigMaker();
+      const config = wcm.generateWebpackConfig();
+      expect(config.output.library).toBeUndefined();
+      expect(config.output.libraryTarget).toBeUndefined();
+    });
+
+    // test('allows changing it', () => {
+    //   const wcm = new WebpackConfigMaker();
+    //   const config = wcm.generateWebpackConfig();
+    //   expect(config.output.library).toBeUndefined();
+    //   expect(config.output.libraryTarget).toBeUndefined();
+    // });
   });
 
   describe('allows you to set the source map type', () => {
@@ -317,7 +344,7 @@ describe('our webpack config thing', () => {
         expect(config.module.rules).toEqual(
           expect.arrayContaining([
             expect.objectContaining({
-              include: ['src'],
+              include: ['/user/workspace/src'],
             }),
           ])
         );
@@ -336,7 +363,10 @@ describe('our webpack config thing', () => {
         expect(config.module.rules).toEqual(
           expect.arrayContaining([
             expect.objectContaining({
-              include: ['src/components', 'src/stuff'],
+              include: [
+                '/user/workspace/src/components',
+                '/user/workspace/src/stuff',
+              ],
             }),
           ])
         );
@@ -356,7 +386,7 @@ describe('our webpack config thing', () => {
         expect(wcm.rules).toEqual(
           expect.arrayContaining([
             expect.objectContaining({
-              exclude: ['src/assets'],
+              exclude: ['/user/workspace/src/assets'],
             }),
           ])
         );
@@ -374,7 +404,10 @@ describe('our webpack config thing', () => {
         expect(wcm.rules).toEqual(
           expect.arrayContaining([
             expect.objectContaining({
-              exclude: ['src/assets', 'src/utils'],
+              exclude: [
+                '/user/workspace/src/assets',
+                '/user/workspace/src/utils',
+              ],
             }),
           ])
         );
@@ -470,29 +503,33 @@ describe('our webpack config thing', () => {
       });
 
       describe('when multiple loaders and rules are set', () => {
-        const wcm = new WebpackConfigMaker();
-        wcm.registerLoader('css-loader');
-        wcm.registerLoader('sass-loader');
-        wcm.registerLoader('my-babel-loader', {
-          loader: 'babel-loader',
-          options: {
-            presets: ['preset-es6', 'preset-react'],
-          },
+        let cssRule, jsRule;
+
+        beforeEach(() => {
+          const wcm = new WebpackConfigMaker();
+          wcm.registerLoader('css-loader');
+          wcm.registerLoader('sass-loader');
+          wcm.registerLoader('my-babel-loader', {
+            loader: 'babel-loader',
+            options: {
+              presets: ['preset-es6', 'preset-react'],
+            },
+          });
+          wcm.addRule({
+            extension: 'scss',
+            loaders: ['css-loader', 'sass-loader'],
+            include: 'src/styles',
+          });
+          wcm.addRule({
+            extensions: ['js', 'jsx'],
+            loader: 'my-babel-loader',
+            exclude: 'src/vendor',
+          });
+          const config = wcm.generateWebpackConfig();
+          const rules = config.module.rules;
+          cssRule = rules[0];
+          jsRule = rules[1];
         });
-        wcm.addRule({
-          extension: 'scss',
-          loaders: ['css-loader', 'sass-loader'],
-          include: 'src/styles',
-        });
-        wcm.addRule({
-          extensions: ['js', 'jsx'],
-          loader: 'my-babel-loader',
-          exclude: 'src/vendor',
-        });
-        const config = wcm.generateWebpackConfig();
-        const rules = config.module.rules;
-        const cssRule = rules[0];
-        const jsRule = rules[1];
 
         test('the regexes are output correctly', () => {
           expect(jsRule).toEqual(
@@ -508,13 +545,13 @@ describe('our webpack config thing', () => {
         });
 
         test('the includes are output correctly', () => {
-          expect(cssRule.include).toEqual(['src/styles']);
-          expect(jsRule.include).toEqual(['src']);
+          expect(cssRule.include).toEqual(['/user/workspace/src/styles']);
+          expect(jsRule.include).toEqual(['/user/workspace/src']);
         });
 
         test('the excludes are output correctly', () => {
           expect(cssRule.exclude).toBe(undefined);
-          expect(jsRule.exclude).toEqual(['src/vendor']);
+          expect(jsRule.exclude).toEqual(['/user/workspace/src/vendor']);
         });
 
         test('the loader config is output correctly', () => {
@@ -592,28 +629,25 @@ describe('our webpack config thing', () => {
       });
     });
 
-    test('It should add style-loader and extract-text-plugin-loader', () => {
+    test('It should add style-loader', () => {
       const rule = wcm.generateWebpackConfig().module.rules[0];
-      expect(rule.use.length).toEqual(5);
-      expect(rule.use[0].loader.includes('extract-text-webpack-plugin')).toBe(
-        true
-      );
-      expect(rule.use[1].loader).toEqual('style-loader');
-      expect(rule.use[2].loader).toEqual('css-loader');
-      expect(rule.use[3].loader).toEqual('postcss-loader');
-      expect(rule.use[4].loader).toEqual('sass-loader');
+      expect(rule.use.length).toEqual(4);
+      expect(rule.use[0].loader).toEqual('style-loader');
+      expect(rule.use[1].loader).toEqual('css-loader');
+      expect(rule.use[2].loader).toEqual('postcss-loader');
+      expect(rule.use[3].loader).toEqual('sass-loader');
     });
 
     test('In development it should be disabled', () => {
       process.env.NODE_ENV = 'development';
       const rule = wcm.generateWebpackConfig().module.rules[0];
-      expect(wcm.plugins['ExtractTextPlugin'].options.disable).toBe(true);
+      // Note, ExtractTextPlugin doesn't work with Webpack 4, so this rule is a placeholder for now.
     });
 
     test('In production it should be enabled', () => {
       process.env.NODE_ENV = 'production';
       const rule = wcm.generateWebpackConfig().module.rules[0];
-      expect(wcm.plugins['ExtractTextPlugin'].options.disable).toBe(false);
+      // Note, ExtractTextPlugin doesn't work with Webpack 4, so this rule is a placeholder for now.
     });
 
     afterAll(() => {
@@ -670,8 +704,8 @@ describe('our webpack config thing', () => {
       const wcm = new WebpackConfigMaker();
       wcm.usePreset('./__fixtures__/examplePreset.js');
       expect(wcm.sourceDirectories).toEqual([
-        'app/client/modules',
-        'lib/client/modules',
+        '/user/workspace/app/client/modules',
+        '/user/workspace/lib/client/modules',
       ]);
     });
 
@@ -685,7 +719,7 @@ describe('our webpack config thing', () => {
     test('You can use multiple presets with usePresets()', () => {
       const wcm = new WebpackConfigMaker();
       wcm.usePreset(configMaker => {
-        configMaker.setOutputPath('bin');
+        configMaker.setWebRoot('bin');
       });
       wcm.usePresets([
         configMaker => {
@@ -693,27 +727,24 @@ describe('our webpack config thing', () => {
         },
         './__fixtures__/examplePreset.js',
       ]);
-      expect(wcm.outputPath).toEqual(process.env.PWD + '/bin');
+      expect(wcm.webRootPath).toEqual('/user/workspace/bin');
       expect(wcm.entryPoints).toEqual(['src/app.js']);
       expect(wcm.sourceDirectories).toEqual([
-        'app/client/modules',
-        'lib/client/modules',
+        '/user/workspace/app/client/modules',
+        '/user/workspace/lib/client/modules',
       ]);
     });
   });
 
   describe('environment specific helpers', () => {
-    let pwd, nodeEnv, mainFile;
+    let nodeEnv, mainFile;
 
     beforeEach(() => {
-      pwd = process.env.PWD;
       nodeEnv = process.env.NODE_ENV;
       mainFile = require.main.filename;
-      process.env.PWD = '/user/workspace';
     });
 
     afterEach(() => {
-      process.env.PWD = pwd;
       process.env.NODE_ENV = nodeEnv;
       require.main.filename = nodeEnv;
     });

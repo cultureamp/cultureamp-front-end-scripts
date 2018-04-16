@@ -45,14 +45,15 @@ const sassPostCssPreset = (wcm /*: WebpackConfigMaker */) => {
     extensions: ['scss', 'css'],
     loaders: ['css-modules-loader', ...preprocessorLoaders],
     exclude: 'node_modules',
-    extract: true,
+    extractText: true,
   });
 
   wcm.addRule({
     extension: 'css',
     loaders: ['css-loader'],
+    exclude: wcm.sourceDirectories,
     include: 'node_modules',
-    extract: true,
+    extractText: true,
   });
 };
 

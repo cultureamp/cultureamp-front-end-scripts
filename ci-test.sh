@@ -28,7 +28,7 @@ yarn add "file:${FRONT_END_SCRIPTS_DIR}"
 yarn link cultureamp-front-end-scripts
 
 log "Test front-end-example scripts run correctly"
-#yarn build
+yarn build
 yarn test
 yarn lint
 yarn flow
