@@ -73,7 +73,7 @@ Things to note:
 
 * Client-side source files and assets live inside 'src'.
 * Generated assets are created in `public/assets`. These should be git-ignored.
-* The development server will run from `public/`, meaning when you load http://localhost:8000/, the `index.html` is loaded by default and your assets are available at http://localhost:8000/assets/.
+* The development server will run from `public/`, meaning when you load http://localhost:8080/, the `index.html` is loaded by default and your assets are available at http://localhost:8080/assets/.
 * None of the configuration files are in the repository by default, they mostly live in `node_modules/cultureamp-front-end-scripts/config/`.
 * Your package.json should have a single `cultureamp-front-end-scripts` dependency, which in turn loads the various dependencies needed to build a standard Culture Amp front-end with React or Elm, and SASS / PostCSS etc.
 
