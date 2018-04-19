@@ -43,7 +43,7 @@ Add these to your package.json scripts:
         "format": "cultureamp-front-end-scripts-format"
     },
 
-Then run `yarn start` and open http://localhost:8000/ to build, watch and preview your app.
+Then run `yarn start` and open http://localhost:8080/ to build, watch and preview your app.
 
 ## Commands
 
