@@ -85,6 +85,7 @@ By default, our webpack configuration will:
 
 * Use `src/main.js` as an entrypoint
 * Use `public/assets` as an output path
+* Append `.bundle.js` to the names of output files, so you can reference the `main.js` entrypoint from your HTML with `<script src="assets/main.bundle.js">`
 * Use `src/` as a modules folder, so you can import `src/components/dropdown.js` with `import 'components/dropdown';`
 * Provide appropriate defaults for development (hot reloading etc), and production (minify, extract text etc)
 * Provide loaders for:
