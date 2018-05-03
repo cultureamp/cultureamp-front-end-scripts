@@ -271,15 +271,13 @@ class WebpackConfigMaker {
           })
         );
       }
+      const loader = {
+        loader: this.isHotModuleReplacementEnabled()
+          ? 'style-loader'
+          : MiniCssExtractPlugin.loader,
+      };
       if (output.use) {
-        output.use = [
-          {
-            loader: this.isHotModuleReplacementEnabled()
-              ? 'style-loader'
-              : MiniCssExtractPlugin.loader,
-          },
-          ...output.use,
-        ];
+        output.use = [loader, ...output.use];
       }
     }
 
