@@ -1,7 +1,9 @@
 // @flow
 const path = require('path');
 const merge = require('lodash.merge');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
 /*::
 type LoaderOpts = { loader?: string };
@@ -260,20 +262,24 @@ class WebpackConfigMaker {
     };
 
     if (rule.extractText) {
-      if (!this.extractCssPlugin) {
-        this.extractCssPlugin = new MiniCssExtractPlugin({
-          filename: this.getFilenameTemplate('bundle.css'),
-          chunkFilename: this.getFilenameTemplate('[id].bundle.css'),
-        });
-        this.addPlugin('mini-css-extract-plugin', this.extractCssPlugin);
+      if (!this.plugins['mini-css-extract-plugin']) {
+        this.addPlugin(
+          'mini-css-extract-plugin',
+          new MiniCssExtractPlugin({
+            filename: this.getFilenameTemplate('bundle.css'),
+            chunkFilename: this.getFilenameTemplate('[id].bundle.css'),
+          })
+        );
       }
-      // Note: extract-text-webpack-plugin is not compatible with Webpack 4+.
-      // While we decide the best strategy going forward, we'll just use style-loader.
-      var loader = this.isHotModuleReplacementEnabled()
-        ? { loader: 'style-loader' }
-        : MiniCssExtractPlugin.loader;
       if (output.use) {
-        output.use = [loader, ...output.use];
+        output.use = [
+          {
+            loader: this.isHotModuleReplacementEnabled()
+              ? 'style-loader'
+              : MiniCssExtractPlugin.loader,
+          },
+          ...output.use,
+        ];
       }
     }
 
@@ -321,6 +327,9 @@ class WebpackConfigMaker {
 
   generateWebpackConfig() /* :WebpackConfig */ {
     const outputPath = this.webRootPath + this.assetPathRelativeToWebRoot;
+    const optimization = this.generateOptimisationConfig();
+    const rules = this.rules.map(rule => this._generateRule(rule));
+    const plugins = Object.values(this.plugins);
 
     const config = {
       entry: this.entryPoints,
@@ -337,10 +346,11 @@ class WebpackConfigMaker {
         library: this.outputLibraryName,
         libraryTarget: this.outputLibraryType,
       },
+      optimization: optimization,
       module: {
-        rules: this.rules.map(rule => this._generateRule(rule)),
+        rules: rules,
       },
-      plugins: Object.values(this.plugins),
+      plugins: plugins,
       devtool: this.isProductionMode()
         ? this.prodSourceMapType
         : this.devSourceMapType,
@@ -351,6 +361,7 @@ class WebpackConfigMaker {
           warnings: true,
           errors: true,
         },
+        stats: 'minimal',
         port: 8080,
         disableHostCheck: true,
         hot: this.isHotModuleReplacementEnabled(),
@@ -358,6 +369,32 @@ class WebpackConfigMaker {
     };
     // $FlowFixMe: flow doesn't correctly guess that Object.values() will give a type of `Decorator[]`.
     return decorateConfig(config, Object.values(this.decorators));
+  }
+
+  generateOptimisationConfig() {
+    if (!this.isProductionMode()) {
+      return;
+    }
+
+    const uglifyPlugin =
+      this.plugins['uglifyjs-webpack-plugin'] ||
+      new UglifyJsPlugin({
+        cache: true,
+        parallel: true,
+        sourceMap: true,
+      });
+
+    const optimizeCssPlugin =
+      this.plugins['optimize-css-assets-webpack-plugin'] ||
+      new OptimizeCSSAssetsPlugin({});
+
+    // If the plugins were registered, we will use them in the optimization settings so we can remove them from the main plugins.
+    this.removePlugin('optimize-css-assets-webpack-plugin');
+    this.removePlugin('uglifyjs-webpack-plugin');
+
+    return {
+      minimizer: [uglifyPlugin, optimizeCssPlugin],
+    };
   }
 
   resolveRelativePath(relativePath /* :string */) {

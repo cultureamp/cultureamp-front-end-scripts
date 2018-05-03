@@ -630,10 +630,9 @@ describe('our webpack config thing', () => {
   });
 
   describe('making a rule use the extractTextPlugin', () => {
-    let wcm, originalNodeEnv;
+    let wcm;
 
     beforeEach(() => {
-      originalNodeEnv = process.env.NODE_ENV;
       wcm = new WebpackConfigMaker();
       wcm.registerLoader('style-loader', { loader: 'style-loader' });
       wcm.registerLoader('css-loader', { loader: 'css-loader' });
@@ -668,9 +667,51 @@ describe('our webpack config thing', () => {
       const rule = wcm.generateWebpackConfig().module.rules[0];
       // Note, ExtractTextPlugin doesn't work with Webpack 4, so this rule is a placeholder for now.
     });
+  });
 
-    afterAll(() => {
-      process.env.NODE_ENV = originalNodeEnv;
+  describe('optimization plugins', () => {
+    let wcm;
+
+    beforeEach(() => {
+      wcm = new WebpackConfigMaker();
+      wcm.addPlugin('myPlugin', {});
+    });
+
+    test('In development optimizations should not be used', () => {
+      const config = wcm.generateWebpackConfig();
+      expect(config.optimization).toBeUndefined();
+      expect(config.plugins.length).toBe(1);
+    });
+
+    test('In production optimizations should be enabled', () => {
+      process.env.NODE_ENV = 'production';
+      const config = wcm.generateWebpackConfig();
+      expect(config.optimization.minimizer.length).toBe(2);
+      expect(config.plugins.length).toBe(1);
+    });
+
+    test('I should be able to specify my own UglifyJS plugin', () => {
+      process.env.NODE_ENV = 'production';
+
+      const myUglify = {};
+      wcm.addPlugin('uglifyjs-webpack-plugin', myUglify);
+
+      const config = wcm.generateWebpackConfig();
+      expect(config.optimization.minimizer.length).toBe(2);
+      expect(config.optimization.minimizer[0]).toBe(myUglify);
+      expect(config.plugins.length).toBe(1);
+    });
+
+    test('I should be able to specify my own MiniCssExtractPlugin', () => {
+      process.env.NODE_ENV = 'production';
+
+      const myOptimizeCss = {};
+      wcm.addPlugin('optimize-css-assets-webpack-plugin', myOptimizeCss);
+
+      const config = wcm.generateWebpackConfig();
+      expect(config.optimization.minimizer.length).toBe(2);
+      expect(config.optimization.minimizer[1]).toBe(myOptimizeCss);
+      expect(config.plugins.length).toBe(1);
     });
   });
 
