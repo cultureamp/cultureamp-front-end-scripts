@@ -1,4 +1,5 @@
 var path = require('path');
+var fs = require('fs');
 var sass = require('node-sass');
 // a fork of css-modules-loader-core which can be used synchronously
 var CssModulesLoaderCore = require('css-modules-loader-core2/sync');
@@ -33,20 +34,27 @@ function pathFetcher(filepath, relativeTo) {
 // this is a temporary solution until we can do proper jest-webpack integration
 // following this change: https://github.com/facebook/jest/pull/599
 function preprocessStylesheet(src, filepath) {
-  // ignore stuff which isn't in module directories
-  if (!/(app|lib)\/client\/modules/.test(filepath)) return '';
-
-  // rewrite imports
-  // TODO: remove the need for these murmur specific rules.
-  var cleanedSrc = src
-    .replace(/~cultureamp\-style\-guide/g, caStyleGuidePath)
-    .replace(/~ca\-assets/g, caAssetsPath)
-    .replace(/~(ca\-[^/]*)/g, caClientLibPath + '/$1');
-
   // process sass syntax
   var css = sass.renderSync({
     sourceComments: true,
     data: cleanedSrc,
+    importer: (url, prev, done) => {
+      if (url.charAt(0) === '~') {
+        const packageName = url.substr(1).split('/')[0];
+        for (let modulePath of [
+          nodeModulesPath,
+          caClientLibPath,
+          caClientAppPath,
+        ]) {
+          const moduleFullPath = modulePath + '/' + packageName;
+          if (fs.existsSync(moduleFullPath)) {
+            const absoluteUrl = url.replace('~' + packageName, moduleFullPath);
+            return { file: absoluteUrl };
+          }
+        }
+      }
+      return { file: url };
+    },
     file: filepath,
   }).css;
 
