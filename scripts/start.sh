@@ -6,4 +6,4 @@ if [ ! -f $CONFIG_FILE ]
     CONFIG_FILE='node_modules/cultureamp-front-end-scripts/config/webpack/webpack.config.js'
 fi
 
-node_modules/.bin/webpack-dev-server --mode development --config $CONFIG_FILE
+node_modules/.bin/webpack-dev-server --host=0.0.0.0 --mode development --config $CONFIG_FILE
