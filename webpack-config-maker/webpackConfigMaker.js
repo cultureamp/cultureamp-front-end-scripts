@@ -68,7 +68,11 @@ class WebpackConfigMaker {
     this.setSourceDirectories(['src']);
     this.setWebRoot('public/');
     this.setAssetPathRelativeToWebRoot('/assets/');
-    this.setFilenameTemplate('[name].bundle.js');
+    this.setFilenameTemplate(
+      this.isProductionMode()
+        ? '[name]-[chunkhash].bundle.js'
+        : '[name].bundle.js'
+    );
     this.setDevSourceMapType('cheap-source-map');
     this.setProdSourceMapType('source-map');
   }
