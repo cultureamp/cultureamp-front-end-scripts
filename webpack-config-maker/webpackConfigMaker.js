@@ -54,7 +54,8 @@ class WebpackConfigMaker {
   assetPathRelativeToWebRoot: string;
   outputLibraryName: ?string;
   outputLibraryType: typeof undefined | 'var' | 'this' | 'window' | 'global' | 'amd' | 'umd';
-  filename: string;
+  devFilenameTemplate: string;
+  prodFilenameTemplate: string;
   prodSourceMapType: SourceMapType;
   devSourceMapType: SourceMapType;
   extractCssPlugin: ?any;
@@ -68,11 +69,8 @@ class WebpackConfigMaker {
     this.setSourceDirectories(['src']);
     this.setWebRoot('public/');
     this.setAssetPathRelativeToWebRoot('/assets/');
-    this.setFilenameTemplate(
-      this.isProductionMode()
-        ? '[name]-[chunkhash].bundle.js'
-        : '[name].bundle.js'
-    );
+    this.setDevFilenameTemplate('[name].[ext]');
+    this.setProdFilenameTemplate('[name]-[chunkhash].[ext]');
     this.setDevSourceMapType('cheap-source-map');
     this.setProdSourceMapType('source-map');
   }
@@ -148,9 +146,24 @@ class WebpackConfigMaker {
     this.outputLibraryType = type;
   }
 
-  /* e.g. [name].bundle.js */
-  setFilenameTemplate(template /* :string */) {
-    this.filename = template;
+  /* e.g. [name].[ext] */
+  setDevFilenameTemplate(template /* :string */) {
+    this.devFilenameTemplate = template;
+  }
+
+  /* e.g. [name]-[chunkhash].[ext] */
+  setProdFilenameTemplate(template /* :string */) {
+    this.prodFilenameTemplate = template;
+  }
+
+  getFilenameTemplate(extension /* : ?string */) {
+    let template = this.isDevelopmentMode()
+      ? this.devFilenameTemplate
+      : this.prodFilenameTemplate;
+    if (extension) {
+      template = template.replace('[ext]', extension);
+    }
+    return template;
   }
 
   registerLoader(name /* :string */, opts /* :LoaderOpts */) {
@@ -249,8 +262,8 @@ class WebpackConfigMaker {
     if (rule.extractText) {
       if (!this.extractCssPlugin) {
         this.extractCssPlugin = new MiniCssExtractPlugin({
-          filename: '[name].css',
-          chunkFilename: '[id].css',
+          filename: this.getFilenameTemplate('bundle.css'),
+          chunkFilename: this.getFilenameTemplate('[id].bundle.css'),
         });
         this.addPlugin('mini-css-extract-plugin', this.extractCssPlugin);
       }
@@ -320,7 +333,7 @@ class WebpackConfigMaker {
       output: {
         path: outputPath,
         publicPath: this.assetPathRelativeToWebRoot,
-        filename: this.filename,
+        filename: this.getFilenameTemplate('bundle.js'),
         library: this.outputLibraryName,
         libraryTarget: this.outputLibraryType,
       },

@@ -5,10 +5,12 @@ let pwd;
 beforeEach(() => {
   pwd = process.env.PWD;
   process.env.PWD = '/user/workspace';
+  process.env.NODE_ENV = 'development';
 });
 
 afterEach(() => {
   process.env.PWD = pwd;
+  process.env.NODE_ENV = 'development';
 });
 
 describe('our webpack config thing', () => {
@@ -117,18 +119,34 @@ describe('our webpack config thing', () => {
   });
 
   describe('allows you to set the output filename template', () => {
-    test('has a default of [name].bundle.js', () => {
+    test('has a default of [name].bundle.js in development', () => {
       const wcm = new WebpackConfigMaker();
 
       const config = wcm.generateWebpackConfig();
       expect(config.output.filename).toEqual('[name].bundle.js');
     });
 
-    test('allows changing it', () => {
+    test('has a default of [name]-[chunkhash].bundle.js in production', () => {
+      process.env.NODE_ENV = 'production';
       const wcm = new WebpackConfigMaker();
-      wcm.setFilenameTemplate('[name].dist.js');
+
       const config = wcm.generateWebpackConfig();
-      expect(config.output.filename).toEqual('[name].dist.js');
+      expect(config.output.filename).toEqual('[name]-[chunkhash].bundle.js');
+    });
+
+    test('allows changing it in development', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.setDevFilenameTemplate('[name]_dev.[ext]');
+      const config = wcm.generateWebpackConfig();
+      expect(config.output.filename).toEqual('[name]_dev.bundle.js');
+    });
+
+    test('allows changing it in production', () => {
+      process.env.NODE_ENV = 'production';
+      const wcm = new WebpackConfigMaker();
+      wcm.setProdFilenameTemplate('[name]_prod.[ext]');
+      const config = wcm.generateWebpackConfig();
+      expect(config.output.filename).toEqual('[name]_prod.bundle.js');
     });
   });
 
