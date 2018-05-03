@@ -1,7 +1,7 @@
 // @flow
 const path = require('path');
 const merge = require('lodash.merge');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 /*::
 type LoaderOpts = { loader?: string };
@@ -57,6 +57,7 @@ class WebpackConfigMaker {
   filename: string;
   prodSourceMapType: SourceMapType;
   devSourceMapType: SourceMapType;
+  extractCssPlugin: ?any;
   */
   constructor() {
     this.loaders = {};
@@ -242,10 +243,20 @@ class WebpackConfigMaker {
     };
 
     if (rule.extractText) {
+      if (!this.extractCssPlugin) {
+        this.extractCssPlugin = new MiniCssExtractPlugin({
+          filename: '[name].css',
+          chunkFilename: '[id].css',
+        });
+        this.addPlugin('mini-css-extract-plugin', this.extractCssPlugin);
+      }
       // Note: extract-text-webpack-plugin is not compatible with Webpack 4+.
       // While we decide the best strategy going forward, we'll just use style-loader.
+      var loader = this.isHotModuleReplacementEnabled()
+        ? { loader: 'style-loader' }
+        : MiniCssExtractPlugin.loader;
       if (output.use) {
-        output.use = [{ loader: 'style-loader' }, ...output.use];
+        output.use = [loader, ...output.use];
       }
     }
 
