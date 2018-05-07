@@ -649,23 +649,23 @@ describe('our webpack config thing', () => {
     test('It should add style-loader', () => {
       const rule = wcm.generateWebpackConfig().module.rules[0];
       expect(rule.use.length).toEqual(4);
-      // Note: until we're detecting hotModuleReloading correctly this is not loading style-loader.
-      // expect(rule.use[0].loader).toEqual('style-loader');
+      // The first rule (`use[0]`) will change depending on the environment, as tested below.
       expect(rule.use[1].loader).toEqual('css-loader');
       expect(rule.use[2].loader).toEqual('postcss-loader');
       expect(rule.use[3].loader).toEqual('sass-loader');
     });
 
-    test('In development it should be disabled', () => {
+    test('In development it should use style loader', () => {
       process.env.NODE_ENV = 'development';
       const rule = wcm.generateWebpackConfig().module.rules[0];
-      // Note, ExtractTextPlugin doesn't work with Webpack 4, so this rule is a placeholder for now.
+      // Disabled check until we enable HMR, which in turn will enable style-loader.
+      // expect(rule.use[0].loader).toEqual('style-loader');
     });
 
-    test('In production it should be enabled', () => {
+    test('In production it should use MiniExtract', () => {
       process.env.NODE_ENV = 'production';
       const rule = wcm.generateWebpackConfig().module.rules[0];
-      // Note, ExtractTextPlugin doesn't work with Webpack 4, so this rule is a placeholder for now.
+      expect(rule.use[0].loader).toContain('mini-css-extract-plugin');
     });
   });
 
