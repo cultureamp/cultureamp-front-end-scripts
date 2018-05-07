@@ -2270,9 +2270,9 @@ cssom@0.3.x, "cssom@>= 0.3.2 < 0.4.0":
   dependencies:
     cssom "0.3.x"
 
-cultureamp-style-guide@^11.1.0:
-  version "11.1.0"
-  resolved "https://registry.yarnpkg.com/cultureamp-style-guide/-/cultureamp-style-guide-11.1.0.tgz#8aeed9981894f8bb541e90c653c0e4b1e8f421d2"
+cultureamp-style-guide@^12.1.0:
+  version "12.1.0"
+  resolved "https://registry.yarnpkg.com/cultureamp-style-guide/-/cultureamp-style-guide-12.1.0.tgz#0b0378a8e0fcd4a77c23e200ef8702654a21bc38"
   dependencies:
     autoprefixer "^7.2.3"
     babel-core "^6.24.1"
@@ -2288,7 +2288,7 @@ cultureamp-style-guide@^11.1.0:
     css-loader "^0.28.5"
     elm-css-modules-loader "^2.0.0"
     elm-webpack-loader "^4.3.1"
-    node-sass "^4.5.3"
+    node-sass "4.7.2"
     postcss-loader "^2.0.6"
     prop-types "^15.6.1"
     react-html-id "^0.1.0"
@@ -5875,7 +5875,7 @@ node-pre-gyp@^0.6.39:
     tar "^2.2.1"
     tar-pack "^3.4.0"
 
-node-sass@^4.5.3:
+node-sass@4.7.2:
   version "4.7.2"
   resolved "https://registry.yarnpkg.com/node-sass/-/node-sass-4.7.2.tgz#9366778ba1469eb01438a9e8592f4262bcb6794e"
   dependencies:

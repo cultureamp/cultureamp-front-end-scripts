@@ -2,8 +2,7 @@
   "name": "cultureamp-front-end-scripts",
   "version": "0.2.0",
   "main": "index.js",
-  "repository":
-    "https://github.com/cultureamp/cultureamp-front-end-scripts.git",
+  "repository": "https://github.com/cultureamp/cultureamp-front-end-scripts.git",
   "author": "FECT",
   "license": "MIT",
   "bin": {
@@ -28,7 +27,7 @@
     "babel-preset-stage-0": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "css-modules-loader-core2": "^0.0.1",
-    "cultureamp-style-guide": "^11.1.0",
+    "cultureamp-style-guide": "^12.1.0",
     "enzyme": "^3.3.0",
     "enzyme-adapter-react-16": "^1.1.1",
     "eslint": "^4.19.1",
