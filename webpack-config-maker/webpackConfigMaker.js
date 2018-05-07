@@ -325,6 +325,8 @@ class WebpackConfigMaker {
 
   generateWebpackConfig() /* :WebpackConfig */ {
     const outputPath = this.webRootPath + this.assetPathRelativeToWebRoot;
+    // WARNING: this code is quite brittle as the next 3 lines must run in exactly this order.
+    // TODO: We should look for a way to refactor and improve this. See https://trello.com/c/qBSvSMLC
     const optimization = this.generateOptimisationConfig();
     const rules = this.rules.map(rule => this._generateRule(rule));
     const plugins = Object.values(this.plugins);
