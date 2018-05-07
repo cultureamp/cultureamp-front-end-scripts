@@ -4,10 +4,6 @@ var sass = require('node-sass');
 // a fork of css-modules-loader-core which can be used synchronously
 var CssModulesLoaderCore = require('css-modules-loader-core2/sync');
 
-var caStyleGuidePath = path.resolve('node_modules/cultureamp-style-guide');
-var caAssetsPath = path.resolve('app/assets');
-var caClientLibPath = path.resolve('lib/client/modules');
-
 // CSS Modules Loader Core has a problem when reading a css file that has a style
 // that imports an image. ie { background-image: url('test.svg') }
 //
@@ -40,12 +36,11 @@ function preprocessStylesheet(src, filepath) {
     data: cleanedSrc,
     importer: (url, prev, done) => {
       if (url.charAt(0) === '~') {
+        // Ideally we would use the same module folders as those configured in WebpackConfigMaker.
+        // For now we will just configure it to support the default "src" folder.
+        const modulePaths = [path.resolve('node_modules'), path.resolve('src')];
         const packageName = url.substr(1).split('/')[0];
-        for (let modulePath of [
-          nodeModulesPath,
-          caClientLibPath,
-          caClientAppPath,
-        ]) {
+        for (let modulePath of modulePaths) {
           const moduleFullPath = modulePath + '/' + packageName;
           if (fs.existsSync(moduleFullPath)) {
             const absoluteUrl = url.replace('~' + packageName, moduleFullPath);
