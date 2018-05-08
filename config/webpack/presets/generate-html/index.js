@@ -8,7 +8,7 @@ const generateHtml = (wcm /*: WebpackConfigMaker */) => {
     'html-webpack-plugin',
     new HtmlWebpackPlugin({
       title: 'Culture Amp',
-      template: require.resolve('./generate-html-template.html'),
+      template: require.resolve('./template.html'),
     })
   );
 };
