@@ -1,7 +1,9 @@
 // @flow
 const path = require('path');
 const merge = require('lodash.merge');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
 /*::
 type LoaderOpts = { loader?: string };
@@ -54,9 +56,11 @@ class WebpackConfigMaker {
   assetPathRelativeToWebRoot: string;
   outputLibraryName: ?string;
   outputLibraryType: typeof undefined | 'var' | 'this' | 'window' | 'global' | 'amd' | 'umd';
-  filename: string;
+  devFilenameTemplate: string;
+  prodFilenameTemplate: string;
   prodSourceMapType: SourceMapType;
   devSourceMapType: SourceMapType;
+  extractCssPlugin: ?any;
   */
   constructor() {
     this.loaders = {};
@@ -67,7 +71,8 @@ class WebpackConfigMaker {
     this.setSourceDirectories(['src']);
     this.setWebRoot('public/');
     this.setAssetPathRelativeToWebRoot('/assets/');
-    this.setFilenameTemplate('[name].bundle.js');
+    this.setDevFilenameTemplate('[name].[ext]');
+    this.setProdFilenameTemplate('[name]-[chunkhash].[ext]');
     this.setDevSourceMapType('cheap-source-map');
     this.setProdSourceMapType('source-map');
   }
@@ -143,9 +148,24 @@ class WebpackConfigMaker {
     this.outputLibraryType = type;
   }
 
-  /* e.g. [name].bundle.js */
-  setFilenameTemplate(template /* :string */) {
-    this.filename = template;
+  /* e.g. [name].[ext] */
+  setDevFilenameTemplate(template /* :string */) {
+    this.devFilenameTemplate = template;
+  }
+
+  /* e.g. [name]-[chunkhash].[ext] */
+  setProdFilenameTemplate(template /* :string */) {
+    this.prodFilenameTemplate = template;
+  }
+
+  getFilenameTemplate(extension /* : ?string */) {
+    let template = this.isDevelopmentMode()
+      ? this.devFilenameTemplate
+      : this.prodFilenameTemplate;
+    if (extension) {
+      template = template.replace('[ext]', extension);
+    }
+    return template;
   }
 
   registerLoader(name /* :string */, opts /* :LoaderOpts */) {
@@ -242,10 +262,22 @@ class WebpackConfigMaker {
     };
 
     if (rule.extractText) {
-      // Note: extract-text-webpack-plugin is not compatible with Webpack 4+.
-      // While we decide the best strategy going forward, we'll just use style-loader.
+      if (!this.plugins['mini-css-extract-plugin']) {
+        this.addPlugin(
+          'mini-css-extract-plugin',
+          new MiniCssExtractPlugin({
+            filename: this.getFilenameTemplate('bundle.css'),
+            chunkFilename: this.getFilenameTemplate('[id].bundle.css'),
+          })
+        );
+      }
+      const loader = {
+        loader: this.isHotModuleReplacementEnabled()
+          ? 'style-loader'
+          : MiniCssExtractPlugin.loader,
+      };
       if (output.use) {
-        output.use = [{ loader: 'style-loader' }, ...output.use];
+        output.use = [loader, ...output.use];
       }
     }
 
@@ -293,6 +325,11 @@ class WebpackConfigMaker {
 
   generateWebpackConfig() /* :WebpackConfig */ {
     const outputPath = this.webRootPath + this.assetPathRelativeToWebRoot;
+    // WARNING: this code is quite brittle as the next 3 lines must run in exactly this order.
+    // TODO: We should look for a way to refactor and improve this. See https://trello.com/c/qBSvSMLC
+    const optimization = this.generateOptimisationConfig();
+    const rules = this.rules.map(rule => this._generateRule(rule));
+    const plugins = Object.values(this.plugins);
 
     const config = {
       entry: this.entryPoints,
@@ -305,14 +342,15 @@ class WebpackConfigMaker {
       output: {
         path: outputPath,
         publicPath: this.assetPathRelativeToWebRoot,
-        filename: this.filename,
+        filename: this.getFilenameTemplate('bundle.js'),
         library: this.outputLibraryName,
         libraryTarget: this.outputLibraryType,
       },
+      optimization: optimization,
       module: {
-        rules: this.rules.map(rule => this._generateRule(rule)),
+        rules: rules,
       },
-      plugins: Object.values(this.plugins),
+      plugins: plugins,
       devtool: this.isProductionMode()
         ? this.prodSourceMapType
         : this.devSourceMapType,
@@ -323,6 +361,7 @@ class WebpackConfigMaker {
           warnings: true,
           errors: true,
         },
+        stats: 'minimal',
         port: 8080,
         disableHostCheck: true,
         hot: this.isHotModuleReplacementEnabled(),
@@ -330,6 +369,32 @@ class WebpackConfigMaker {
     };
     // $FlowFixMe: flow doesn't correctly guess that Object.values() will give a type of `Decorator[]`.
     return decorateConfig(config, Object.values(this.decorators));
+  }
+
+  generateOptimisationConfig() {
+    if (!this.isProductionMode()) {
+      return;
+    }
+
+    const uglifyPlugin =
+      this.plugins['uglifyjs-webpack-plugin'] ||
+      new UglifyJsPlugin({
+        cache: true,
+        parallel: true,
+        sourceMap: true,
+      });
+
+    const optimizeCssPlugin =
+      this.plugins['optimize-css-assets-webpack-plugin'] ||
+      new OptimizeCSSAssetsPlugin({});
+
+    // If the plugins were registered, we will use them in the optimization settings so we can remove them from the main plugins.
+    this.removePlugin('optimize-css-assets-webpack-plugin');
+    this.removePlugin('uglifyjs-webpack-plugin');
+
+    return {
+      minimizer: [uglifyPlugin, optimizeCssPlugin],
+    };
   }
 
   resolveRelativePath(relativePath /* :string */) {

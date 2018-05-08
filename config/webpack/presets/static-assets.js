@@ -5,9 +5,7 @@ const WebpackConfigMaker = require('../../../webpack-config-maker/');
 const staticAssetsPreset = (wcm /*: WebpackConfigMaker */) => {
   const fileLoaderOptions = {
     // TODO: investigate why murmur specifies a `context: 'app/assets` property here.
-    name: wcm.isDevelopmentMode()
-      ? '[path][name].[ext]'
-      : '[path][name]-[hash].[ext]',
+    name: wcm.getFilenameTemplate(),
   };
 
   wcm.registerLoader('file-loader', {

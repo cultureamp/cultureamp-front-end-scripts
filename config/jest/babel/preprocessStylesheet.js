@@ -1,11 +1,8 @@
 var path = require('path');
+var fs = require('fs');
 var sass = require('node-sass');
 // a fork of css-modules-loader-core which can be used synchronously
 var CssModulesLoaderCore = require('css-modules-loader-core2/sync');
-
-var caStyleGuidePath = path.resolve('node_modules/cultureamp-style-guide');
-var caAssetsPath = path.resolve('app/assets');
-var caClientLibPath = path.resolve('lib/client/modules');
 
 // CSS Modules Loader Core has a problem when reading a css file that has a style
 // that imports an image. ie { background-image: url('test.svg') }
@@ -33,20 +30,26 @@ function pathFetcher(filepath, relativeTo) {
 // this is a temporary solution until we can do proper jest-webpack integration
 // following this change: https://github.com/facebook/jest/pull/599
 function preprocessStylesheet(src, filepath) {
-  // ignore stuff which isn't in module directories
-  if (!/(app|lib)\/client\/modules/.test(filepath)) return '';
-
-  // rewrite imports
-  // TODO: remove the need for these murmur specific rules.
-  var cleanedSrc = src
-    .replace(/~cultureamp\-style\-guide/g, caStyleGuidePath)
-    .replace(/~ca\-assets/g, caAssetsPath)
-    .replace(/~(ca\-[^/]*)/g, caClientLibPath + '/$1');
-
   // process sass syntax
   var css = sass.renderSync({
     sourceComments: true,
     data: cleanedSrc,
+    importer: (url, prev, done) => {
+      if (url.charAt(0) === '~') {
+        // Ideally we would use the same module folders as those configured in WebpackConfigMaker.
+        // For now we will just configure it to support the default "src" folder.
+        const modulePaths = [path.resolve('node_modules'), path.resolve('src')];
+        const packageName = url.substr(1).split('/')[0];
+        for (let modulePath of modulePaths) {
+          const moduleFullPath = modulePath + '/' + packageName;
+          if (fs.existsSync(moduleFullPath)) {
+            const absoluteUrl = url.replace('~' + packageName, moduleFullPath);
+            return { file: absoluteUrl };
+          }
+        }
+      }
+      return { file: url };
+    },
     file: filepath,
   }).css;
 

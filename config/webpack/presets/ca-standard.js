@@ -10,6 +10,7 @@ const caStandard = (wcm /*: WebpackConfigMaker */) => {
     require('./static-assets'),
     require('./ca-style-guide'),
     require('./react-dev-tools'),
+    require('./generate-html'),
   ]);
 };
 

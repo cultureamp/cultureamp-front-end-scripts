@@ -5,10 +5,12 @@ let pwd;
 beforeEach(() => {
   pwd = process.env.PWD;
   process.env.PWD = '/user/workspace';
+  process.env.NODE_ENV = 'development';
 });
 
 afterEach(() => {
   process.env.PWD = pwd;
+  process.env.NODE_ENV = 'development';
 });
 
 describe('our webpack config thing', () => {
@@ -117,18 +119,34 @@ describe('our webpack config thing', () => {
   });
 
   describe('allows you to set the output filename template', () => {
-    test('has a default of [name].bundle.js', () => {
+    test('has a default of [name].bundle.js in development', () => {
       const wcm = new WebpackConfigMaker();
 
       const config = wcm.generateWebpackConfig();
       expect(config.output.filename).toEqual('[name].bundle.js');
     });
 
-    test('allows changing it', () => {
+    test('has a default of [name]-[chunkhash].bundle.js in production', () => {
+      process.env.NODE_ENV = 'production';
       const wcm = new WebpackConfigMaker();
-      wcm.setFilenameTemplate('[name].dist.js');
+
       const config = wcm.generateWebpackConfig();
-      expect(config.output.filename).toEqual('[name].dist.js');
+      expect(config.output.filename).toEqual('[name]-[chunkhash].bundle.js');
+    });
+
+    test('allows changing it in development', () => {
+      const wcm = new WebpackConfigMaker();
+      wcm.setDevFilenameTemplate('[name]_dev.[ext]');
+      const config = wcm.generateWebpackConfig();
+      expect(config.output.filename).toEqual('[name]_dev.bundle.js');
+    });
+
+    test('allows changing it in production', () => {
+      process.env.NODE_ENV = 'production';
+      const wcm = new WebpackConfigMaker();
+      wcm.setProdFilenameTemplate('[name]_prod.[ext]');
+      const config = wcm.generateWebpackConfig();
+      expect(config.output.filename).toEqual('[name]_prod.bundle.js');
     });
   });
 
@@ -612,10 +630,9 @@ describe('our webpack config thing', () => {
   });
 
   describe('making a rule use the extractTextPlugin', () => {
-    let wcm, originalNodeEnv;
+    let wcm;
 
     beforeEach(() => {
-      originalNodeEnv = process.env.NODE_ENV;
       wcm = new WebpackConfigMaker();
       wcm.registerLoader('style-loader', { loader: 'style-loader' });
       wcm.registerLoader('css-loader', { loader: 'css-loader' });
@@ -632,26 +649,69 @@ describe('our webpack config thing', () => {
     test('It should add style-loader', () => {
       const rule = wcm.generateWebpackConfig().module.rules[0];
       expect(rule.use.length).toEqual(4);
-      expect(rule.use[0].loader).toEqual('style-loader');
+      // The first rule (`use[0]`) will change depending on the environment, as tested below.
       expect(rule.use[1].loader).toEqual('css-loader');
       expect(rule.use[2].loader).toEqual('postcss-loader');
       expect(rule.use[3].loader).toEqual('sass-loader');
     });
 
-    test('In development it should be disabled', () => {
+    test('In development it should use style loader', () => {
       process.env.NODE_ENV = 'development';
       const rule = wcm.generateWebpackConfig().module.rules[0];
-      // Note, ExtractTextPlugin doesn't work with Webpack 4, so this rule is a placeholder for now.
+      // Disabled check until we enable HMR, which in turn will enable style-loader.
+      // expect(rule.use[0].loader).toEqual('style-loader');
     });
 
-    test('In production it should be enabled', () => {
+    test('In production it should use MiniExtract', () => {
       process.env.NODE_ENV = 'production';
       const rule = wcm.generateWebpackConfig().module.rules[0];
-      // Note, ExtractTextPlugin doesn't work with Webpack 4, so this rule is a placeholder for now.
+      expect(rule.use[0].loader).toContain('mini-css-extract-plugin');
+    });
+  });
+
+  describe('optimization plugins', () => {
+    let wcm;
+
+    beforeEach(() => {
+      wcm = new WebpackConfigMaker();
+      wcm.addPlugin('myPlugin', {});
     });
 
-    afterAll(() => {
-      process.env.NODE_ENV = originalNodeEnv;
+    test('In development optimizations should not be used', () => {
+      const config = wcm.generateWebpackConfig();
+      expect(config.optimization).toBeUndefined();
+      expect(config.plugins.length).toBe(1);
+    });
+
+    test('In production optimizations should be enabled', () => {
+      process.env.NODE_ENV = 'production';
+      const config = wcm.generateWebpackConfig();
+      expect(config.optimization.minimizer.length).toBe(2);
+      expect(config.plugins.length).toBe(1);
+    });
+
+    test('I should be able to specify my own UglifyJS plugin', () => {
+      process.env.NODE_ENV = 'production';
+
+      const myUglify = {};
+      wcm.addPlugin('uglifyjs-webpack-plugin', myUglify);
+
+      const config = wcm.generateWebpackConfig();
+      expect(config.optimization.minimizer.length).toBe(2);
+      expect(config.optimization.minimizer[0]).toBe(myUglify);
+      expect(config.plugins.length).toBe(1);
+    });
+
+    test('I should be able to specify my own MiniCssExtractPlugin', () => {
+      process.env.NODE_ENV = 'production';
+
+      const myOptimizeCss = {};
+      wcm.addPlugin('optimize-css-assets-webpack-plugin', myOptimizeCss);
+
+      const config = wcm.generateWebpackConfig();
+      expect(config.optimization.minimizer.length).toBe(2);
+      expect(config.optimization.minimizer[1]).toBe(myOptimizeCss);
+      expect(config.plugins.length).toBe(1);
     });
   });
 
