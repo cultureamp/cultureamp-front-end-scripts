@@ -1,5 +1,9 @@
 # Release History: cultureamp-style-front-end-scripts
 
+## 0.2.1
+
+* 👍 Use [html-webpack-harddisk-plugin](https://github.com/jantimon/html-webpack-harddisk-plugin) to ensure the webpack dev server always updates index.html on disk, and update the README to suggest using a symlink as the easiest path to serving an index.html.
+
 ## 0.2.0
 
 * ✨ MiniCSSExtractPlugin is now used to extract stylesheets.
