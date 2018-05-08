@@ -60,8 +60,7 @@ Our default project structure looks like this:
 
 ```
 ├── public
-│   └── assets # Generated webpack config goes here
-│   └── index.html
+│   └── assets # Generated assets goes here
 ├── src
 │   ├── main.js
 │   └── main.test.js
@@ -73,9 +72,12 @@ Things to note:
 
 * Client-side source files and assets live inside 'src'.
 * Generated assets are created in `public/assets`. These should be git-ignored.
-* The development server will run from `public/`, meaning when you load http://localhost:8080/, the `index.html` is loaded by default and your assets are available at http://localhost:8080/assets/.
+* Webpack will automatically generate an index file at `public/assets/index.html`.
+* The development server will run from `public/`, meaning when you load http://localhost:8000/ your assets will be available at http://localhost:8000/assets/.
+* By default there is a file in `public/index.html` that redirects to the generated `public/assets/index.html`. You may prefer to copy the generated index.html asset into public, or to run your own webserver which serves the generated index.html.
 * None of the configuration files are in the repository by default, they mostly live in `node_modules/cultureamp-front-end-scripts/config/`.
 * Your package.json should have a single `cultureamp-front-end-scripts` dependency, which in turn loads the various dependencies needed to build a standard Culture Amp front-end with React or Elm, and SASS / PostCSS etc.
+* When running the webpack-dev-server (using `yarn start`), the assets will not be updated on the file-system, the webserver compiles and serves them without updating the files on disk. To update the files in `public/assets` you will need to run `yarn build`.
 
 ## Configuration
 
