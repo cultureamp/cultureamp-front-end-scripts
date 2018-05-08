@@ -1,7 +1,7 @@
 // @flow
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const WebpackConfigMaker = require('../../../webpack-config-maker/');
+const WebpackConfigMaker = require('../../../../webpack-config-maker/');
 
 const generateHtml = (wcm /*: WebpackConfigMaker */) => {
   wcm.addPlugin(
