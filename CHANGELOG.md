@@ -1,5 +1,9 @@
 # Release History: cultureamp-style-front-end-scripts
 
+## 0.2.2
+
+* 👍 Enable [historyApiFallback](https://webpack.js.org/configuration/dev-server/#devserver-historyapifallback) for webpack dev server to enable client-side routing, where the server serves index.html for all URLs.
+
 ## 0.2.1
 
 * 👍 Use [html-webpack-harddisk-plugin](https://github.com/jantimon/html-webpack-harddisk-plugin) to ensure the webpack dev server always updates index.html on disk, and update the README to suggest using a symlink as the easiest path to serving an index.html.

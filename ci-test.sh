@@ -24,7 +24,6 @@ rm -rf tmp && mkdir tmp && cd tmp
 git clone https://github.com/cultureamp/cultureamp-front-end-example.git
 cd cultureamp-front-end-example
 yarn
-yarn add "file:${FRONT_END_SCRIPTS_DIR}"
 yarn link cultureamp-front-end-scripts
 
 log "Test front-end-example scripts run correctly"

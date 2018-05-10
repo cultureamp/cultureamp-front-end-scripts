@@ -365,6 +365,7 @@ class WebpackConfigMaker {
         port: 8080,
         disableHostCheck: true,
         hot: this.isHotModuleReplacementEnabled(),
+        historyApiFallback: true,
       },
     };
     // $FlowFixMe: flow doesn't correctly guess that Object.values() will give a type of `Decorator[]`.
