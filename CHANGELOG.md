@@ -2,7 +2,7 @@
 
 ## 0.2.2
 
-* 👍 Enables [historyApiFallback](https://webpack.js.org/configuration/dev-server/#devserver-historyapifallback) for webpack dev server to enable client-side routing, where the server serves index.html for all URLs.
+* 👍 Enable [historyApiFallback](https://webpack.js.org/configuration/dev-server/#devserver-historyapifallback) for webpack dev server to enable client-side routing, where the server serves index.html for all URLs.
 
 ## 0.2.1
 
