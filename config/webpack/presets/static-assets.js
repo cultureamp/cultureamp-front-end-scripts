@@ -3,7 +3,7 @@
 const WebpackConfigMaker = require('../../../webpack-config-maker/');
 
 const staticAssetsPreset = (wcm /*: WebpackConfigMaker */) => {
-  const fileLoaderOptions = {
+  const fileLoaderOptions /*: { name: string, limit?: number }*/ = {
     // TODO: investigate why murmur specifies a `context: 'app/assets` property here.
     name: wcm.getFilenameTemplate(),
   };
@@ -19,10 +19,10 @@ const staticAssetsPreset = (wcm /*: WebpackConfigMaker */) => {
   });
 
   wcm.registerLoader('url-loader', {
-    options: {
-      ...fileLoaderOptions,
+    // Avoid object spread for VSCode ESLint integration: https://github.com/Microsoft/vscode-eslint/issues/464
+    options: Object.assign(fileLoaderOptions, {
       limit: 10000, // Only apply to files below this size (in bytes)
-    },
+    }),
   });
 
   wcm.addRule({
