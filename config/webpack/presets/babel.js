@@ -13,10 +13,13 @@ const babelPreset = (wcm /*: WebpackConfigMaker */) => {
     require.resolve('../../babel/babel.config.js')
   );
 
-  const babelOptions = {
-    plugins: [],
-    ...importedConfig,
-  };
+  // Avoid object spread for VSCode ESLint integration: https://github.com/Microsoft/vscode-eslint/issues/464
+  const babelOptions = Object.assign(
+    {
+      plugins: [],
+    },
+    importedConfig
+  );
 
   if (wcm.isCachingEnabled()) {
     babelOptions.cacheDirectory = wcm.getCacheDirectory();

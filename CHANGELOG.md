@@ -1,5 +1,9 @@
 # Release History: cultureamp-style-front-end-scripts
 
+## 0.2.3
+
+* 👍 Enable ESLint configuration to run in Visual Studio Code (NodeJS 7.x).
+
 ## 0.2.2
 
 * 👍 Enable [historyApiFallback](https://webpack.js.org/configuration/dev-server/#devserver-historyapifallback) for webpack dev server to enable client-side routing, where the server serves index.html for all URLs.
