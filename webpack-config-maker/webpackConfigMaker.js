@@ -98,10 +98,7 @@ class WebpackConfigMaker {
   }
 
   getProjectDirectory() {
-    if (!process.env.PWD) {
-      throw 'The environment variable $PWD was not set';
-    }
-    return process.env.PWD;
+    return process.cwd();
   }
 
   getCacheDirectory() {
