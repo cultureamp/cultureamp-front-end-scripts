@@ -8,7 +8,7 @@ module.exports = {
     'import/resolver': {
       webpack: {
         config:
-          process.env.PWD +
+          process.cwd() +
           '/node_modules/cultureamp-front-end-scripts/config/webpack/webpack.config.js',
       },
     },

@@ -1,5 +1,9 @@
 # Release History: cultureamp-style-front-end-scripts
 
+## 0.2.4
+
+* 🐛 Fix path issue with ESLint configuration in Visual Studio Code.
+
 ## 0.2.3
 
 * 👍 Enable ESLint configuration to run in Visual Studio Code (NodeJS 7.x).
