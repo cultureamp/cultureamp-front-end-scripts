@@ -124,12 +124,12 @@ describe('our webpack config thing', () => {
       expect(config.output.filename).toEqual('[name].bundle.js');
     });
 
-    test('has a default of [name]-[chunkhash].bundle.js in production', () => {
+    test('has a default of [name]-[hash].bundle.js in production', () => {
       process.env.NODE_ENV = 'production';
       const wcm = new WebpackConfigMaker();
 
       const config = wcm.generateWebpackConfig();
-      expect(config.output.filename).toEqual('[name]-[chunkhash].bundle.js');
+      expect(config.output.filename).toEqual('[name]-[hash].bundle.js');
     });
 
     test('allows changing it in development', () => {

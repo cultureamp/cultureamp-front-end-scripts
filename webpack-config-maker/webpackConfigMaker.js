@@ -72,7 +72,7 @@ class WebpackConfigMaker {
     this.setWebRoot('public/');
     this.setAssetPathRelativeToWebRoot('/assets/');
     this.setDevFilenameTemplate('[name].[ext]');
-    this.setProdFilenameTemplate('[name]-[chunkhash].[ext]');
+    this.setProdFilenameTemplate('[name]-[hash].[ext]');
     this.setDevSourceMapType('cheap-source-map');
     this.setProdSourceMapType('source-map');
   }
@@ -150,7 +150,7 @@ class WebpackConfigMaker {
     this.devFilenameTemplate = template;
   }
 
-  /* e.g. [name]-[chunkhash].[ext] */
+  /* e.g. [name]-[hash].[ext] */
   setProdFilenameTemplate(template /* :string */) {
     this.prodFilenameTemplate = template;
   }
