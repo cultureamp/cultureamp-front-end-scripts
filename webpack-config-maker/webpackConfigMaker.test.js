@@ -117,6 +117,27 @@ describe('our webpack config thing', () => {
   });
 
   describe('allows you to set the output filename template', () => {
+    test('getFilenameTemplate() allows changing the extension and the hash', () => {
+      const wcm = new WebpackConfigMaker();
+      process.env.NODE_ENV = 'development';
+      expect(wcm.getFilenameTemplate()).toBe('[name].[ext]');
+      process.env.NODE_ENV = 'production';
+      expect(wcm.getFilenameTemplate()).toBe('[name]-[hash].[ext]');
+    });
+
+    test('getFilenameTemplate() allows changing the extension and the hash', () => {
+      process.env.NODE_ENV = 'production';
+      const wcm = new WebpackConfigMaker();
+      expect(wcm.getFilenameTemplate()).toBe('[name]-[hash].[ext]');
+      expect(wcm.getFilenameTemplate('js')).toBe('[name]-[hash].js');
+      expect(wcm.getFilenameTemplate(null, '[chunkhash]')).toBe(
+        '[name]-[chunkhash].[ext]'
+      );
+      expect(wcm.getFilenameTemplate('bundle.css', '[contenthash]')).toBe(
+        '[name]-[contenthash].bundle.css'
+      );
+    });
+
     test('has a default of [name].bundle.js in development', () => {
       const wcm = new WebpackConfigMaker();
 
@@ -124,12 +145,12 @@ describe('our webpack config thing', () => {
       expect(config.output.filename).toEqual('[name].bundle.js');
     });
 
-    test('has a default of [name]-[hash].bundle.js in production', () => {
+    test('has a default of [name]-[chunkhash].bundle.js in production', () => {
       process.env.NODE_ENV = 'production';
       const wcm = new WebpackConfigMaker();
 
       const config = wcm.generateWebpackConfig();
-      expect(config.output.filename).toEqual('[name]-[hash].bundle.js');
+      expect(config.output.filename).toEqual('[name]-[chunkhash].bundle.js');
     });
 
     test('allows changing it in development', () => {

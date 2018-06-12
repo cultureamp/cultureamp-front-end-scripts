@@ -155,12 +155,15 @@ class WebpackConfigMaker {
     this.prodFilenameTemplate = template;
   }
 
-  getFilenameTemplate(extension /* : ?string */) {
+  getFilenameTemplate(extension /* : ?string */, hash /* : ?string */) {
     let template = this.isDevelopmentMode()
       ? this.devFilenameTemplate
       : this.prodFilenameTemplate;
     if (extension) {
       template = template.replace('[ext]', extension);
+    }
+    if (hash) {
+      template = template.replace('[hash]', hash);
     }
     return template;
   }
@@ -263,8 +266,11 @@ class WebpackConfigMaker {
         this.addPlugin(
           'mini-css-extract-plugin',
           new MiniCssExtractPlugin({
-            filename: this.getFilenameTemplate('bundle.css'),
-            chunkFilename: this.getFilenameTemplate('[id].bundle.css'),
+            filename: this.getFilenameTemplate('bundle.css', '[contenthash]'),
+            chunkFilename: this.getFilenameTemplate(
+              '[id].bundle.css',
+              '[contenthash]'
+            ),
           })
         );
       }
@@ -339,7 +345,7 @@ class WebpackConfigMaker {
       output: {
         path: outputPath,
         publicPath: this.assetPathRelativeToWebRoot,
-        filename: this.getFilenameTemplate('bundle.js'),
+        filename: this.getFilenameTemplate('bundle.js', '[chunkhash]'),
         library: this.outputLibraryName,
         libraryTarget: this.outputLibraryType,
       },
