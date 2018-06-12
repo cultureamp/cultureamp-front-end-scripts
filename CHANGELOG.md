@@ -3,7 +3,9 @@
 ## 0.3.0
 
 - ✨ Add optional `hash: string` argument to WebpackConfigMaker.getFilenameTemplate(), allowing you to use a custom hash like `[chunkhash]` or `[contenthash]` instead.
-- 🐛 Fix bug with static assets preset - file-loader now uses `[hash]` instead of `[contenthash]` (which was not supported) in the output filename.
+- 🐛 Fix bugs with static assets preset:
+  - file-loader and url-loader were not included as dependencies
+  - file-loader now uses `[hash]` instead of `[contenthash]` (which was not supported) in the output filename.
 - 👍 Upgrade to flow 0.73
 
 ## 0.2.4
