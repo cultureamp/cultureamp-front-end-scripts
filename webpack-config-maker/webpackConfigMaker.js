@@ -253,11 +253,14 @@ class WebpackConfigMaker {
   }
 
   _generateRule(rule /* :ProcessedRuleOpts */) {
+    const loaders /* :?Array<LoaderOpts | String> */ = rule.loaders.map(
+      loader => this.loaders[loader]
+    );
     const output = {
       include: rule.include || this.sourceDirectories,
       exclude: rule.exclude,
       test: new RegExp(`\\.(${rule.extensions.join('|')})$`),
-      use: rule.loaders.map(loader => this.loaders[loader]),
+      use: loaders,
       oneOf: undefined,
     };
 
