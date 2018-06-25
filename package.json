@@ -1,6 +1,6 @@
 {
   "name": "cultureamp-front-end-scripts",
-  "version": "0.3.0",
+  "version": "0.0.0-development",
   "main": "index.js",
   "repository": "https://github.com/cultureamp/cultureamp-front-end-scripts.git",
   "author": "FECT",
@@ -12,6 +12,49 @@
     "cultureamp-front-end-scripts-lint": "./scripts/lint.sh",
     "cultureamp-front-end-scripts-flow": "./scripts/flow.sh",
     "cultureamp-front-end-scripts-format": "./scripts/format.sh"
+  },
+  "scripts": {
+    "commit": "git-cz"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -e"
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ],
+    "rules": {
+      "footer-leading-blank": [
+        0,
+        "always"
+      ],
+      "header-max-length": [
+        0,
+        "always"
+      ],
+      "subject-case": [
+        0,
+        "always"
+      ]
+    }
+  },
+  "release": {
+    "preset": "angular",
+    "parserOpts": {
+      "noteKeywords": [
+        "BREAKING CHANGE",
+        "BREAKING CHANGES",
+        "BREAKING",
+        "💔"
+      ]
+    }
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   },
   "dependencies": {
     "autoprefixer": "^8.2.0",
@@ -57,5 +100,13 @@
     "webpack": "^4.5.0",
     "webpack-cli": "^2.0.14",
     "webpack-dev-server": "^3.1.3"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^7.0.0",
+    "@commitlint/config-conventional": "^7.0.1",
+    "commitizen": "^2.10.1",
+    "cz-conventional-changelog": "^2.1.0",
+    "husky": "^1.0.0-rc.9",
+    "semantic-release": "^15.6.0"
   }
 }
