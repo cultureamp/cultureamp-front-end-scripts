@@ -185,3 +185,9 @@ You can edit the flow configuration by editing this file.
 We currently don't offer any default prettier configuration, preferring to stick to the defaults.
 
 If you wish to change the settings you can provide your own [configuration file](https://prettier.io/docs/en/configuration.html).
+
+## Changelog
+
+View the [Releases Tab](https://github.com/cultureamp/cultureamp-front-end-scripts/releases) for information about releases, including any breaking changes.
+
+You can also view [release notes for versions before 0.3.1](https://github.com/cultureamp/cultureamp-front-end-scripts/blob/75be91fe87b52bc26f8a90a5a624cb2040e2f070/CHANGELOG.md).
