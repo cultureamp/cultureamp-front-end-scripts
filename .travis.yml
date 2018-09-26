@@ -6,7 +6,6 @@ cache:
 before_script:
 - yarn
 - yarn list
-script: bash ./ci-test.sh
-after_success:
-- yarn global add travis-deploy-once
-- travis-deploy-once "yarn semantic-release"
+script:
+- bash ./ci-test.sh
+- yarn semantic-release
