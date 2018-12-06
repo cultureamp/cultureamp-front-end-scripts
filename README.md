@@ -1,6 +1,13 @@
+# Deprecation notice
+
+Please see https://github.com/cultureamp/big-frontend-repo for our new mono-repo for building front-ends at Culture Amp.
+Ask #team_front_end if you have any questions.
+
 # cultureamp-front-end-scripts
 
 The single dependency you need for building a Culture Amp front-end project.
+
+cultureamp-front-end-scripts is maintained by the Front End Capability Team. (#team_front_end in #camp_amplify)
 
 #### Contributing and finding help
 
