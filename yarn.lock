@@ -3204,7 +3204,7 @@ elliptic@^6.0.0:
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.0"
 
-elm-css-modules-loader@^2.0.0:
+elm-css-modules-loader@^2.0.0, elm-css-modules-loader@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/elm-css-modules-loader/-/elm-css-modules-loader-2.0.2.tgz#820f9988c5199816f8653402882553e248d93950"
   dependencies:
@@ -3218,6 +3218,16 @@ elm-webpack-loader@^4.3.1:
     glob "^7.1.1"
     loader-utils "^1.0.2"
     node-elm-compiler "^4.2.1"
+    yargs "^6.5.0"
+
+elm-webpack-loader@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/elm-webpack-loader/-/elm-webpack-loader-4.5.0.tgz#b39988ac7c70db3c0922daf695c97d1d6bdb1e41"
+  dependencies:
+    elm "^0.18.0"
+    glob "^7.1.1"
+    loader-utils "^1.0.2"
+    node-elm-compiler "^4.5.0"
     yargs "^6.5.0"
 
 elm@^0.18.0:
@@ -6881,7 +6891,7 @@ node-dir@0.1.8:
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/node-dir/-/node-dir-0.1.8.tgz#55fb8deb699070707fb67f91a460f0448294c77d"
 
-node-elm-compiler@^4.2.1:
+node-elm-compiler@^4.2.1, node-elm-compiler@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/node-elm-compiler/-/node-elm-compiler-4.5.0.tgz#3029f053cfbfc68730e75a54f93495cc58bf7ceb"
   dependencies:
